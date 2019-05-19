@@ -1,4 +1,4 @@
-from surface import ns
+from .surface import ns
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.cm import jet, Greys

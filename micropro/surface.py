@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.ticker as ticker
 from os import listdir, getcwd, path, makedirs,remove
-
+from .lens import diclens
 __all__ = ['ns']
 
 class ns:
