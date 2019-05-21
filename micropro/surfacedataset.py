@@ -1,3 +1,12 @@
+from __future__ import print_function
+if hasattr(__builtins__, 'raw_input'):
+    input = raw_input
+w = 'wb' # for csv module
+a = 'ab'
+if sys.version_info[0] >= 3:
+    w = 'w'
+    a = 'a'
+# End python 2 backward compatibility
 from .surface import ns
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,6 +17,9 @@ from os import listdir, getcwd, path, makedirs,remove
 
 import time
 
+
+
+
 __all__ = ['surfacedataset']
 
 class surfacedataset:
@@ -17,15 +29,15 @@ class surfacedataset:
         self.name = getcwd().split('\\')[-1]
         self.log = []
         self.totaltime = None
-        self.ID = None 
-        self.ID_b = None 
+        self.ID = None
+        self.ID_b = None
         self.dataset_infos = None
         self.ROIs_dataset = None
-    
+
     def save_log(self, name = None):
         if name == None:
             name = r'dataset_processing_log.txt'
-            
+
         with open(name, 'w') as f:
             f.write('************************ \n')
             f.write('* Dataset: %s           *\n' % (self.name))
@@ -42,24 +54,24 @@ class surfacedataset:
         pass
 
     def load_data_fromfolder(self,path = None):
-        from os.path import isdir, join 
+        from os.path import isdir, join
         if path == None:
             path = getcwd()
             folders = listdir(path)
             for i in folders:
                 if isdir(i) and i != 'Results' and i[0] != '.':
                     self.surfaces.append(ns(join(i,i)))
-        else: 
+        else:
              folders = listdir(path)
-             for i in folders: 
+             for i in folders:
                  j = join(path,i)
                  if isdir(j) and i != 'Results' and i[0] != '.':
                     finalpath = join(j,i)
-                    print(finalpath) 
+                    print(finalpath)
                     self.surfaces.append(ns(finalpath))
-                                
-            
-    
+
+
+
     def load_mat_fromfolder(self,lateral_resolution,conversion_factor=1):
         import scipy.io
         matfiles = [i for i in listdir(getcwd()) if i[-4:] == '.mat']
@@ -71,17 +83,17 @@ class surfacedataset:
             surf.name = name
             surf.parameters.stage_step = lateral_resolution
             self.surfaces.append(surf)
-            
+
     def load_path(self,path):
         self.surfaces.append(ns(path,init=False))
-            
+
     def check_label_name(self):
         LabelsNotInName=0
         noIDs=0
         status=True
         datasetID = []
         for i in self.surfaces:
-            if i.sample_infos != None:   
+            if i.sample_infos != None:
                 label = i.sample_infos.label
                 name = i.sample_infos.name
                 idx = i.header['JOB_ID']
@@ -91,17 +103,17 @@ class surfacedataset:
                     LabelsNotInName+=1
                     suff = "  WRONG!->"
                 print("%s%s: %s  (%s ID:%s) " %(suff,i.name,label,name,idx))
-                
+
             else:
                 print(" %s  has no ID!" %(i.name))
                 status = False
                 noIDs+=1
         if datasetID != []:
-            
+
             self.ID = list(set(datasetID))
             print("Found %s dataset:" %(len(self.ID)))
             try:
-                import LabDBwrapper as Lab 
+                import LabDBwrapper as Lab
                 self.dataset_infos = Lab.dataset(self.ID[0],r"C:\Users\OPdaTe\Documents\LabDatabase\SamplesDB")
             except ImportError:
                 "No LabWrapper found"
@@ -110,18 +122,18 @@ class surfacedataset:
         if not status or LabelsNotInName:
             print("******WARNING!!!!********")
             print("Samples without label: %s" %(noIDs))
-            print("Samples with label not in name: %s" %(LabelsNotInName))  
+            print("Samples with label not in name: %s" %(LabelsNotInName))
             if input("Continue? y/n").upper() == "Y":
-                status = True 
+                status = True
         return status
-        
+
     def get_surface_by_name(self,name):
         surfaces_index = []
         for index,surf in enumerate(self.surfaces):
             if surf.name == name:
                 surfaces_index.append(index)
         return surfaces_index
-        
+
     def get_surface_by_ID(self,ID):
         surfaces_index = []
         for index,surf in enumerate(self.surfaces):
@@ -130,8 +142,8 @@ class surfacedataset:
                     surfaces_index.append(index)
             else:
                 print("NO samples infos!")
-        return surfaces_index 
-    
+        return surfaces_index
+
     def get_surface_by_label(self,label):
         surfaces_index = []
         for index,surf in enumerate(self.surfaces):
@@ -140,17 +152,17 @@ class surfacedataset:
                     surfaces_index.append(index)
             else:
                 print("NO samples infos!")
-        return surfaces_index 
-        
+        return surfaces_index
+
     def dict_surfaces_by_name(self):
         """
         Return a dictionary with all the surfaces
         """
         dict_surfaces = {}
         for i in self.surfaces:
-            dict_surfaces[i] = i.name 
+            dict_surfaces[i] = i.name
         return dict_surfaces
-    
+
     def check_status(self,ignoreQC=False):
         self.check_label_name()
         self.get_QualityControl()
@@ -174,16 +186,16 @@ class surfacedataset:
                              res = True
                      if res:
                          done += 1
-                        
+
             self.time_evaluation()
             status = done /float(self.dataset_infos.totnumber)
             print("STATUS:{0:.0f}%".format(status*100))
             timeleft = (self.totaltime/(int(status*100)))*int((100 -status*100))
             print("TIME LEFT: %s" %(timeleft))
-                            
+
         else:
             print("No dataset infos!")
-        
+
     def fliprows(self):
         for i in self.surfaces:
             print(i.name)
@@ -214,8 +226,8 @@ class surfacedataset:
             self.surfaces.append(newsurf)
         repscore = np.ma.std(arr, axis = 0)
         return newsurf,repscore
-                        
-            
+
+
     def combine_usingSNR(self,i=0,j=1,getSNR=True,threshold=500):
         surfa = self.surfaces[i]
         surfb = self.surfaces[j]
@@ -224,23 +236,23 @@ class surfacedataset:
         if surfa.parameters.laserpower < surfb.parameters.laserpower:
             bestsurf = surfa
             worsesurf = surfb
-            
+
         else:
             bestsurf = surfb
             worsesurf = surfa
-            
+
         if surfa.array.shape == surfb.array.shape:
             SNRbestsurf = bestsurf.SNR(matrix=True,plot=False)[1]
             if threshold != None:
-                #if we set a threshold all the value grater than the threshold 
-            #will be bring to 1000 so that the bestmatrix will be kept 
+                #if we set a threshold all the value grater than the threshold
+            #will be bring to 1000 so that the bestmatrix will be kept
                 whereisgreaterofthreshold = SNRbestsurf > threshold
                 SNRbestsurf[whereisgreaterofthreshold]=1000
-                
+
             SNRworsesurf = worsesurf.SNR(matrix=True,plot=False)[1]
             SNRaisbest = SNRbestsurf > SNRworsesurf#map where SNRa is best
             newarray = np.zeros(surfa.array.shape)
-            newarray[SNRaisbest] = bestsurf.array[SNRaisbest] 
+            newarray[SNRaisbest] = bestsurf.array[SNRaisbest]
             newarray[~SNRaisbest] = worsesurf.array[~SNRaisbest]
             snrarray=None
             if getSNR:
@@ -250,11 +262,11 @@ class surfacedataset:
             import copy
             newsurf = copy.deepcopy(bestsurf)
             newsurf.array = newarray
-            
+
             return newarray,snrarray,newsurf
         else:
             print('Shapes do not match!')
-        
+
     def compute_Roughenss_ROI(self):
         from scipy.stats.mstats import skew, kurtosis
         import csv
@@ -272,7 +284,7 @@ class surfacedataset:
             'Kurt2',
             'Kurt3',
             'Mean']
-        with open(r'Sq_comparison.csv', 'ab') as f:
+        with open(r'Sq_comparison.csv', a) as f:
             writer = csv.writer(f)
             writer.writerow(fields)
 
@@ -315,12 +327,12 @@ class surfacedataset:
                 averagek = np.mean(Kur)
                 Kur.append(averagek)
                 writer.writerow([surf.name] + Sq + Sk + Kur)
-                
+
     def plot(self, vminx=None, vmaxx=None, unit='mm', data='', absolute=False,
              mode=False, plot=True,save=False,cartesian=True,
             dilution=False, title = True, cm = None,
             QC = False ,orientation = 'auto',show_ROIs=False):
-            
+
         for i in self.surfaces:
             i.plot(vminx=vminx, vmaxx=vmaxx, unit=unit, data=data,
                    absolute=absolute,mode=mode, plot=plot,
@@ -329,7 +341,7 @@ class surfacedataset:
                    cm = cm,QC = QC ,orientation = orientation,show_ROIs=show_ROIs)
 
     def profile_plot(self, col=None,row=None, start =None, stop =None,vminx=None,
-                     vmaxx=None, unit='mm', absolute=False,mode=False, 
+                     vmaxx=None, unit='mm', absolute=False,mode=False,
                      plot=True,save=False, title = True):
         '''
         plot profile
@@ -339,22 +351,22 @@ class surfacedataset:
         labels = []
         kind = ''
         if col != None and row == None:
-            
+
             for i in reversed(self.surfaces):
-                if col == 'mid': 
+                if col == 'mid':
                     col = i.array.shape[1]/2
                 profile = i.array[:,col][start:stop]
                 datas.append(profile)
                 labels.append(i.name)
                 x_datas.append(np.arange(len(profile))*i.parameters.stage_step)
                 kind = 'vertical'
-            
+
         elif row !=None and col == None:
-             
+
              for i in reversed(self.surfaces):
-                if row == 'mid': 
+                if row == 'mid':
                     row = i.array.shape[0]/2
-                    
+
                 profile = i.array[row][start:stop]
                 datas.append(profile)
                 labels.append(i.name)
@@ -363,8 +375,8 @@ class surfacedataset:
 
         else:
             print("Select a row or a column")
-        
-     
+
+
         #This stretch colorbar values to min-max
         if mode == 'min-max':
             vminx = np.array(datas).min()
@@ -377,7 +389,7 @@ class surfacedataset:
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
-  
+
         for profile,x_data,name in zip(datas,x_datas,labels):
             if unit == 'micron':
                 profile = np.array(profile)*1000
@@ -389,17 +401,17 @@ class surfacedataset:
         ax.legend()
         if title:
             ax.set_title('%s %s' % (kind,self.name))
-           
+
         if save: self._save_plot(fig,'%s profile com %s.png' %(kind,self.name))
         if plot:
             plt.show()
         else:
             return plt
-    
 
-    
+
+
     def time_evaluation(self):
-        import datetime 
+        import datetime
         t0 = datetime.timedelta()
         for i in  self.surfaces:
             duration = i.parameters.time['duration']
@@ -412,7 +424,7 @@ class surfacedataset:
         sec = (totsec %3600) %60
         self.totaltime = t0
         return h,m,sec
-        
+
     def save_metrology_complete(self,filename= None,ROI=None,plot=True,cutlabel=None,
                                 groupbylabel=False,margin=None,save=False,
                                 split=False,delimiter=None,uselabel=False,
@@ -426,13 +438,13 @@ class surfacedataset:
         i=1
         if filename == None:
             filename = r'Metrology_complete.csv'
-        with open(filename, 'ab') as f:
+        with open(filename, a) as f:
             writer = csv.writer(f)
             if split != False:
                 name = ['Name','Type','Ref']
             else:
                 if uselabel or cutlabel:
-                    name = ['Name','Label']   
+                    name = ['Name','Label']
                 else:
                     name = ['Name']
             writer.writerow(name+fields)
@@ -450,11 +462,11 @@ class surfacedataset:
                 diz2 = surf.calculate_area_metrology(ROI = ROI,
                                                      margin = margin,
                                                      subtractplane = subtractplane)
-                
+
                 if (surf.sample_infos != None) and (cutlabel==None):
                     label = surf.sample_infos.label
                     labels.append(label)
-                    
+
                     if split == 'label':
                         writer.writerow([surf.name,label[0],label[1]]+list(diz2.values()))
                     elif split == 'filename':
@@ -462,37 +474,37 @@ class surfacedataset:
                             dataclass = surf.name.split(delimiter)
                         else:
                             dataclass = surf.name
-                            
+
                         writer.writerow([surf.name,dataclass[-2],label[-1]]+list(diz2.values()))
                     else:
                         if uselabel:
                             writer.writerow([surf.name,label]+list(diz2.values()))
                         else:
                             writer.writerow([surf.name]+list(diz2.values()))
-                    
+
                     if groupbylabel:
                         if surf.sample_infos.label not in class_maker:
                             class_maker[surf.sample_infos.label] = i
                             i+=1
-                else:                   
+                else:
                     if cutlabel == None and split == False:
                         labels.append(surf.name)
                         writer.writerow([surf.name]+list(diz2.values()))
-                    
+
                     elif split == 'filename':
                         if delimiter !=None:
                             dataclass = surf.name.split(delimiter)
                         else:
                             dataclass = surf.name
                         writer.writerow([surf.name,dataclass[-2],label[-1]]+list(diz2.values()))
-                        
+
                     elif cutlabel != None:
                         label = surf.name[cutlabel[0]:cutlabel[1]]
                         labels.append(label)
                         writer.writerow([surf.name,label]+list(diz2.values()))
-                    
+
                 values.append(list(diz2.values()))
-   
+
         if plot:
             print("Plotting the data it will take some time plt.show() to show")
             figs={}
@@ -500,7 +512,7 @@ class surfacedataset:
             values = np.array(values)
             for idx, field in enumerate(fields):
                 figs[idx]=plt.figure()
-                Y = values[:,idx]               
+                Y = values[:,idx]
                 if groupbylabel:
                     X = [class_maker[j] for j in labels]
                 else:
@@ -508,49 +520,49 @@ class surfacedataset:
                 xlim=max(X)+1
                 axs[idx]=figs[idx].add_subplot(111)
                 axs[idx].plot(X,Y,'x')
-                
+
                 axs[idx].hlines(np.mean(Y),0,xlim,label='Mean')
-                axs[idx].set_xticks(X)                             
+                axs[idx].set_xticks(X)
                 axs[idx].set_title(field)
                 axs[idx].set_ylabel('%s ' %(field))
                 axs[idx].set_xlim(0,xlim)
                 axs[idx].set_ylim(min(Y)*1.05,max(Y)*1.05)
                 if groupbylabel:
-                    axs[idx].set_xticklabels(np.unique(labels)) 
-                  
+                    axs[idx].set_xticklabels(np.unique(labels))
+
                 else:
                     axs[idx].set_xticklabels(labels)
                 axs[idx].grid(True)
                 axs[idx].legend()
                 if save:
                     self._save_plot(figs[idx],'%s Dataset ' %(field))
-                    
+
     def multiple_ROI_metrology(self,nROI = 3, offset = 100, dim = 200 ,
                                subtractplane = False):
         ty = (nROI -1)/2
-                
+
         rang = list(range(-ty, ty+2))
         rang.remove(0)
         for i in rang:
-            self.save_metrology_complete(centerROI = 1, offset = offset*i, 
-                                         dim = dim, plot=0, 
+            self.save_metrology_complete(centerROI = 1, offset = offset*i,
+                                         dim = dim, plot=0,
                                          subtractplane = subtractplane )
 
-          
+
     def workflow(self, flip_rows=True, checkmissing=True, mfilter=True,bilateral=False,
-                 subtractplane = True, secmfilter = False, appyreport=False, 
+                 subtractplane = True, secmfilter = False, appyreport=False,
                  timingdiagram = False,saveres = False,
                  csvreport=True,cropconcentric=None,crop=None,
                  order=1,flipyax=None,metrology=3,checklabel=True,total='optimal'):
         import gc
         if checklabel:
             if self.check_label_name() == False:
-                return False         
-        
+                return False
+
         if flip_rows:
             print('FLIPPING ROWS OF THE SAMPLES:')
             self.fliprows()
-        
+
         log = True
         for j, i in enumerate(self.surfaces):
             print('SURFACE %s of %s' % (j + 1, len(self.surfaces)))
@@ -559,38 +571,38 @@ class surfacedataset:
                 print('Checking for missing values...')
                 i.checkmissing(replacewith=0)
                 if log: self.log.append('Checked missed value')
-                             
+
             if mfilter:
                 print('Filtering bad values...')
                 i.mfilter(total=total)
-                if log: self.log.append('Bad value filter')                
-                
+                if log: self.log.append('Bad value filter')
+
             if crop:
                 print('Cropping concentric the matrix...')
                 i.crop(crop[0],crop[1],crop[2],crop[3])
-                if log: self.log.append('Cropped. Side: y1 %s y2 %s x1 %s x2 %s' 
+                if log: self.log.append('Cropped. Side: y1 %s y2 %s x1 %s x2 %s'
                 %(crop[0],crop[1],crop[2],crop[3]))
-                
+
             if cropconcentric !=None:
                 print('Cropping concentric the matrix...')
                 i.crop_concentric_ROI(cropconcentric)
                 if log: self.log.append('Square Cropped. Side: %s mm' %(cropconcentric*2))
-                    
+
             if bilateral:
                 print('Using bilateral filter ...')
                 i.bilateralFilter()
                 if log: self.log.append('Bilateral filter')
-                
+
             if subtractplane:
                 print('Subtracting plane...')
                 i.subtractplane(order=order)
-                if log: self.log.append('Plane subtraction')                
-                
+                if log: self.log.append('Plane subtraction')
+
             if secmfilter != False:
                 print('Applying second filter...')
                 i.mfilter('-%s' %(secmfilter),'+%s' %(secmfilter),snr=False)
                 if log: self.log.append('Second bad value filter:-%s +%s' %(secmfilter))
-                    
+
             if timingdiagram:
                 print('Timing diagram...')
                 pltX = i.timing_diagram(plot=False)
@@ -602,7 +614,7 @@ class surfacedataset:
             gc.collect()
             gc.collect()
             log = False
-            
+
             if saveres:
                 pltFIG = i.plot(plot=False)
                 pltSNR = i.SNR(plot=False)
@@ -729,47 +741,47 @@ class surfacedataset:
                 plot.add_item(array, z=j)
         win.exec_()
         return win
-    
+
     def repeatability_test_surfaces(self,vmin=0,vmax=8):
         '''
         Method of surface dataset class
-        It tests the repeatability of a set of measurements taken in the same 
+        It tests the repeatability of a set of measurements taken in the same
         area.
-        
+
         Returns
         -------
-        Array of the standard deviations for every point. Roughness 
+        Array of the standard deviations for every point. Roughness
         repeatability
         '''
 
         surffla = np.array([list(i.array.flatten()) for i in self.surfaces])
         RoughnessRepetibility = np.nanstd([np.nanstd(i) for i in surffla])*1000
-        stdevarr = np.nanstd(surffla,axis=0)*1000    
+        stdevarr = np.nanstd(surffla,axis=0)*1000
         averagestd = round(np.nanmean(stdevarr),3)
         print('Average Measurement Repeatability: %s microns' %(averagestd))
         print('Roughness Repeatability: %s microns'%(RoughnessRepetibility))
-        arr =  stdevarr.reshape(self.surfaces[0].array.shape)  
+        arr =  stdevarr.reshape(self.surfaces[0].array.shape)
 
         fig2 = plt.figure()
         ax2 = fig2.add_subplot(111)
-        cmap = jet 
-        cmap.set_bad('w', 1.) 
+        cmap = jet
+        cmap.set_bad('w', 1.)
         meshj = ax2.pcolormesh(arr, cmap = cmap)
         cm2 = plt.colorbar(meshj)
         meshj.set_clim(vmin,vmax)
         cm2.set_label('Repeatability (microns)')
         plt.show()
         return arr,RoughnessRepetibility
-    
-        
-    
-      
+
+
+
+
     def mat_export(self, mdict = None, savemask = False):
         '''
         Export in .mat format.
         '''
         import scipy.io
- 
+
         self._mk_results_folder()
         if mdict == None:
             for a in self.surfaces:
@@ -780,10 +792,10 @@ class surfacedataset:
                 self.name,
                 mdict=mdict)
         self.save_log()
-        
+
     def exp_csvReport(self):
         import csv
-        with open('DatasetReport.csv', 'wb') as f:
+        with open('DatasetReport.csv', w) as f:
             writer = csv.writer(f)
             writer.writerow(['Sample Name',
                              'Lens name',
@@ -823,22 +835,22 @@ class surfacedataset:
                              'Tot. Time:',
                              '%d h. %d min. %d sec.' %(h,m,s),
                              ''])
-                
-                
+
+
     def ROI_size_variation_effect(self,step=20,plot='show',
                                   save=False, kind='margin', unit='pt' ):
 
-        distancefromcenter = []        
+        distancefromcenter = []
         Sq=[]
         Rskw=[]
         Rkurt=[]
         surfname = []
         num_surf = len(self.surfaces)
-        
+
         for n,surf in enumerate(self.surfaces):
             print(('Working on surface %s of %s:' %(n,num_surf)))
             if kind == 'margin':
-                distancefromcenter1,Sq1,Rskw1, Rkurt1 = surf.margin_ROI(step,plot=False) 
+                distancefromcenter1,Sq1,Rskw1, Rkurt1 = surf.margin_ROI(step,plot=False)
             else:
                 distancefromcenter1,Sq1,Rskw1, Rkurt1 = surf.concentric_ROI(step,plot=False)
             if unit == 'pt':
@@ -849,40 +861,40 @@ class surfacedataset:
             Rskw.append(Rskw1)
             Rkurt.append(Rkurt1)
             surfname.append(surf.name)
-            
+
         if plot !=False:
             if kind == 'margin':
                 xlabel = 'Margin (%s)' %(unit)
             else:
                 xlabel = 'Distance from the center (%s)' %(unit)
-            
-        
+
+
             figx = plt.figure()
-            axx = figx.add_subplot(111)            
+            axx = figx.add_subplot(111)
             axx.set_xlabel(xlabel)
             axx.set_ylabel('Roughness')
             axx.set_title('Roughness computed excluding different margins')
-           
-         
+
+
             fig2 = plt.figure()
-            ax2 = fig2.add_subplot(111)            
+            ax2 = fig2.add_subplot(111)
             ax2.set_xlabel(xlabel)
             ax2.set_ylabel('Skweness')
             ax2.set_title('Skweness computed excluding different margins')
-            
+
             figt = plt.figure()
-            axt = figt.add_subplot(111)            
+            axt = figt.add_subplot(111)
             axt.set_xlabel(xlabel)
             axt.set_ylabel('Kurtosis')
             axt.set_title('Kurtosis computed excluding different margins')
-            
-            for index,i in enumerate(self.surfaces):                
+
+            for index,i in enumerate(self.surfaces):
                 axx.plot(distancefromcenter[index],Sq[index],label = i.name)
-                ax2.plot(distancefromcenter[index],Rskw[index],label = i.name) 
+                ax2.plot(distancefromcenter[index],Rskw[index],label = i.name)
                 axt.plot(distancefromcenter[index],Rkurt[index],label =  i.name)
-            
+
             #To make sure we don't have twice the same color
-            colormap = plt.cm.gist_ncar #nipy_spectral, Set1,Paired   
+            colormap = plt.cm.gist_ncar #nipy_spectral, Set1,Paired
             colorsx = [colormap(i) for i in np.linspace(0, 0.9, len(axx.lines))]
             colors2 = [colormap(i) for i in np.linspace(0, 0.9,len(ax2.lines))]
             colorst = [colormap(i) for i in np.linspace(0, 0.9,len(axt.lines))]
@@ -897,7 +909,7 @@ class surfacedataset:
             for z,j3 in enumerate(axt.lines):
                 j3.set_color(colorst[z])
                 #j3.set_linestyle(random.choice[linestyles])
-                
+
             axt.legend()
             ax2.legend()
             axx.legend()
@@ -919,13 +931,13 @@ class surfacedataset:
                                data = Rkurt,
                                surfname = surfname,
                                firstcell = kind)
-           
- 
-                
-        return distancefromcenter,Sq,Rskw, Rkurt
-     
 
-    def corners_detector(self, data = 'mask',w = 100,h = 100, 
+
+
+        return distancefromcenter,Sq,Rskw, Rkurt
+
+
+    def corners_detector(self, data = 'mask',w = 100,h = 100,
                      Kernel_1 = (15,15),
                      Kernel_2 = (200,200),
                      pad_width = 100,
@@ -935,49 +947,49 @@ class surfacedataset:
                      ):
         for i in self.surfaces:
             i.corners_detector( data = data,
-                                w = w,h = h, 
+                                w = w,h = h,
                                 Kernel_1 = Kernel_1,Kernel_2 = Kernel_2,
                                 pad_width = pad_width,
                                 subdivide = subdivide,
                                 method = method,
                                 plot = plot)
-            
-                         
+
+
     def split_surfaces(self,padding=(0,0),dimension=100,number=3):
-        newsurfdat = []        
+        newsurfdat = []
         for k in range(len(self.surfaces)):
             #we use pop to save memory
             surf = self.surfaces.pop()
             for i in range(number):
-                y1 = padding[0] 
+                y1 = padding[0]
                 y2 = padding[0] + dimension
                 x1 = padding[1] + dimension*i
                 x2 = padding[1] + dimension*i + dimension
                 newsurfdat.append(surf.crop(y1,y2,x1,x2,copy=True,suffix="_%s"%(i)))
         self.surfaces = newsurfdat
         self.log.append("Created %s ROI of side %s unit" %(number,dimension))
-                
-    
+
+
     def gwy_export(self,unit = "mm"):
         from gwyfile.objects import GwyContainer, GwyDataField, GwySIUnit
         obj = GwyContainer()
-        
+
         for idx,surf in enumerate(self.surfaces):
             obj["/%s/data/title" %(idx)] = surf.name
-            
+
             if  hasattr(surf.array,"mask"):
                 if unit == 'mm':
                     data = GwyDataField(surf.array.data.astype(np.float))
                     data.si_unit_z = GwySIUnit(unitstr = "mm")
                 if unit == 'micron' or unit == 'um':
-                    data = GwyDataField(surf.array.data.astype(np.float)*1000)                
+                    data = GwyDataField(surf.array.data.astype(np.float)*1000)
                     data.si_unit_z = GwySIUnit(unitstr = "μm")
                 data.si_unit_xy = GwySIUnit(unitstr = "mm")
                 data.xres = surf.array.shape[1]
                 data.yres = surf.array.shape[0]
                 data.xreal = surf.parameters.rangeX
                 data.yreal = surf.parameters.rangeY
-                
+
                 obj["/%s/mask"%(idx)] = GwyDataField(surf.array.mask.astype(np.float))
                 obj["/%s/data"%(idx)] = data
             else:
@@ -985,7 +997,7 @@ class surfacedataset:
                     data = GwyDataField(surf.array.astype(np.float))
                     data.si_unit_z = GwySIUnit(unitstr = "mm")
                 if unit == 'micron' or unit == 'um':
-                    data = GwyDataField(surf.array.astype(np.float)*1000)                
+                    data = GwyDataField(surf.array.astype(np.float)*1000)
                     data.si_unit_z = GwySIUnit(unitstr = "μm")
                 data.xres = surf.array.shape[1]
                 data.yres = surf.array.shape[0]
@@ -1016,23 +1028,23 @@ class surfacedataset:
             obj["/%s/meta"%(idx)] = metadata
     #        log = GwyContainer()
     #        log[]
-        obj.tofile("%s.gwy" %(self.name))    
-    
+        obj.tofile("%s.gwy" %(self.name))
+
     def hdf5_export(self, kind='minimal', compression=None,
                     toberotated =[],rotation=None):
         import h5py
         '''
-        Flip to -1 if your sample is upside down. 
-        
+        Flip to -1 if your sample is upside down.
+
         Rotation radians (1,2,3)
         '''
-        
+
         if toberotated !=[]:
             for i in self.surfaces:
                 if i.name in toberotated:
                     i.corners["Rotation"] = rotation
                     print("Flipped: %s" %(i.name))
-                
+
         # create the HDF5 file
         f = h5py.File('%s_%s.h5' % (self.name, kind), "w")
 
@@ -1042,7 +1054,7 @@ class surfacedataset:
         diz = self.dict_surfaces_by_name() #sort the surface by name
         for i in sorted(diz, key= diz.get):
             print(i.name)
-            corners_mat = np.array([None,None]) 
+            corners_mat = np.array([None,None])
             if i.corners["TL"] != None and i.corners["BR"] != None:
                 print("Inside corner mat")
                 #create a croner matrix
@@ -1050,7 +1062,7 @@ class surfacedataset:
                                        [i.corners["BL"],i.corners["BR"]]])
                 if i.corners["Rotation"] != None:
                     corners_mat = np.rot90(corners_mat,rotation)
-            
+
             if kind == 'minimal':
                 # Create new dataset for every surface
                 datset = f.create_dataset(
@@ -1087,7 +1099,7 @@ class surfacedataset:
                                  corners_mat[1][0][0]])
                     xf = np.max([corners_mat[0][1][0],
                                  corners_mat[1][1][0]])
-                    dataset.attrs['ROI'] = datset.regionref[yi:yf,xi:xf] 
+                    dataset.attrs['ROI'] = datset.regionref[yi:yf,xi:xf]
 
             else:
                 # create a new group for every surface
@@ -1120,7 +1132,7 @@ class surfacedataset:
                 group.attrs['ACQUISITION_DATE'] = str(i.parameters.date)
                 group.attrs['PROBE_FINEPOWER'] = int(i.parameters.finepower)
                 group.attrs['PROBE_COURSEPOWER'] = int(i.parameters.coursepower)
-                
+
                 if kind == 'full' or kind == 'fullsample':
                     # if kind == 'full' all the processed data are saved
                     data = i.array
@@ -1157,7 +1169,7 @@ class surfacedataset:
                                      corners_mat[1][1][0]])
                         DATA.attrs['ROI'] = DATA.regionref[yi:yf,xi:xf]
                         SNR.attrs['ROI'] = SNR.regionref[yi:yf,xi:xf]
-                        
+
                     if i.missingvaluesarray is not None:
                         missing = i.missingvaluesarray
                         if i.corners['Rotation'] != None:
@@ -1227,9 +1239,9 @@ class surfacedataset:
                             dtype='uint8'),
                         compression=compression)
 
-                
+
         f.close()  # Close the file
-        
+
     def reference_to_corners(self,corner = 'TL',pad = 0, trim = False):
         for i in self.surfaces:
             #cut the samples so that they start at the corner
@@ -1241,7 +1253,7 @@ class surfacedataset:
             minshape = np.min(shapes,axis = 0 )
             for i in self.surfaces:
                 i.crop(0,minshape[0],0,minshape[1])
-            
+
     def multi_seg_min_max(self,step,save=False,average=False,
                           xmaxlim=None,ymaxlim=None,xsquared=False,
                           export = None):
@@ -1253,7 +1265,7 @@ class surfacedataset:
             print('--------------')
             data[i.name] = i.multi_segmentation(step=step,kind=6,plot=False)
             count+=1
-        
+
         fig2 = plt.figure()
         ax2 = fig2.add_subplot(111)
         fig3 = plt.figure()
@@ -1275,14 +1287,14 @@ class surfacedataset:
             ymincsv = []
             ymaxcsv = []
             maxrcsv = []
-            
-           
+
+
         for k in data:
             print('--------------')
             print(k)
             print('--------------')
             indices = np.array(sorted(data[k].keys()))
-          
+
             ymin = [np.nanmean(data[k][i][0].flatten()*1000) for i in indices]
             ymax = [np.nanmean(data[k][i][1].flatten()*1000) for i in indices]
             #add also the max and min value of the whole array
@@ -1290,7 +1302,7 @@ class surfacedataset:
             #ymax.append(np.nanmax(data[k].values()[0][1].flatten()*1000))
             #indices = np.append(indices, data[k].values()[0][0].shape[0]*indices[0])
             if xsquared:
-                indices = indices**2 
+                indices = indices**2
             ax2.plot(indices,ymin,color='b',label=k)
             ax3.plot(indices,ymax,color='r',label=k)
             ax4.plot(indices,np.array(ymax)+np.array(ymin),color='r',label=k)
@@ -1302,39 +1314,39 @@ class surfacedataset:
                 avymax.append(np.array(ymax))
             if export == 'mat':
                 matfile[k+str('_indices')] = indices
-                matfile[k+str('_ymin')] = ymin 
-                matfile[k+str('_ymax')] = ymax 
+                matfile[k+str('_ymin')] = ymin
+                matfile[k+str('_ymax')] = ymax
                 matfile[k+str('_maxr')] = np.array(ymax)+np.array(ymin)
-            
+
             if export == 'csv':
                 indicescsv.append(['Name']+list(indices))
                 ymincsv.append([k]+ymin)
                 ymaxcsv.append([k]+ymax)
                 maxrcsv.append([k]+list(np.array(ymax)+np.array(ymin)))
-                
-            
-            
+
+
+
         if average:
             avminf = np.mean(np.array(avymin),axis=0)
             avmaxf = np.mean(np.array(avymax),axis=0)
-            with open('Averageymin.csv', 'wb') as f:
+            with open('Averageymin.csv', w) as f:
                 import csv
                 writer = csv.writer(f)
                 writer.writerow(indices)
                 writer.writerow(avminf)
                 writer.writerow(avmaxf)
-            
-            
+
+
         ax4.set_xlabel('Evaluation lenght (micron)')
-        ax4.set_ylabel('Maximal  range roughness amplitude  (micron)')       
+        ax4.set_ylabel('Maximal  range roughness amplitude  (micron)')
         ax3.set_xlabel('Evaluation lenght (micron)')
-        ax3.set_ylabel('Maximal roughness  amplitude  (micron)')        
+        ax3.set_ylabel('Maximal roughness  amplitude  (micron)')
         ax2.set_xlabel('Evaluation lenght (micron)')
         ax2.set_ylabel('-Minimal roughness  amplitude  (micron)')
         ax4l.set_xlabel('Evaluation lenght (micron)')
-        ax4l.set_ylabel('Maximal  range roughness amplitude  (micron)')       
+        ax4l.set_ylabel('Maximal  range roughness amplitude  (micron)')
         ax3l.set_xlabel('Evaluation lenght (micron)')
-        ax3l.set_ylabel('Maximal roughness  amplitude  (micron)')        
+        ax3l.set_ylabel('Maximal roughness  amplitude  (micron)')
         ax2l.set_xlabel('Evaluation lenght (micron)')
         ax2l.set_ylabel('-Minimal roughness  amplitude  (micron)')
         ax4l.set_yscale('log')
@@ -1350,7 +1362,7 @@ class surfacedataset:
             ax4l.set_xlim(xmaxlim[0],xmaxlim[1])
             ax3l.set_xlim(xmaxlim[0],xmaxlim[1])
             ax2l.set_xlim(xmaxlim[0],xmaxlim[1])
-            
+
         if ymaxlim != None:
             ax4.set_ylim(ymaxlim[0],ymaxlim[1]*2)
             ax3.set_ylim(ymaxlim[0],ymaxlim[1])
@@ -1358,9 +1370,9 @@ class surfacedataset:
             ax4l.set_ylim(ymaxlim[0],ymaxlim[1]*2)
             ax3l.set_ylim(ymaxlim[0],ymaxlim[1])
             ax2l.set_ylim(ymaxlim[0],ymaxlim[1])
-        
-        
-        colormap = plt.cm.gist_ncar #nipy_spectral, Set1,Paired   
+
+
+        colormap = plt.cm.gist_ncar #nipy_spectral, Set1,Paired
         colors = [colormap(i) for i in np.linspace(0, 0.9,len(ax2.lines))]
         for i,j in enumerate(ax2.lines):
             j.set_color(colors[i])
@@ -1374,38 +1386,38 @@ class surfacedataset:
             j.set_color(colors[i])
         for i,j in enumerate(ax4l.lines):
             j.set_color(colors[i])
-            
+
         handles, labels = ax2.get_legend_handles_labels()
         # sort both labels and handles by labels
         labels, handles = list(zip(*sorted(zip(labels, handles), key=lambda t: t[0])))
         ax2.legend(handles, labels,prop={'size':8},loc=4)
-                
+
         handles, labels = ax3.get_legend_handles_labels()
         # sort both labels and handles by labels
         labels, handles = list(zip(*sorted(zip(labels, handles), key=lambda t: t[0])))
         ax3.legend(handles, labels, prop={'size':8},loc=4)
-                
+
         handles, labels = ax4.get_legend_handles_labels()
         # sort both labels and handles by labels
         labels, handles = list(zip(*sorted(zip(labels, handles), key=lambda t: t[0])))
         ax4.legend(handles, labels, prop={'size':8},loc=4)
-        
+
         handles, labels = ax2l.get_legend_handles_labels()
         # sort both labels and handles by labels
         labels, handles = list(zip(*sorted(zip(labels, handles), key=lambda t: t[0])))
         ax2l.legend(handles, labels,prop={'size':8},loc=4)
-                
+
         handles, labels = ax3l.get_legend_handles_labels()
         # sort both labels and handles by labels
         labels, handles = list(zip(*sorted(zip(labels, handles), key=lambda t: t[0])))
         ax3l.legend(handles, labels, prop={'size':8},loc=4)
-                
+
         handles, labels = ax4l.get_legend_handles_labels()
         # sort both labels and handles by labels
         labels, handles = list(zip(*sorted(zip(labels, handles), key=lambda t: t[0])))
         ax4l.legend(handles, labels, prop={'size':8},loc=4)
         plt.tight_layout()
-        
+
         self.log.append('multi_seg_min_max. Step: %s \n' %(step))
         if save:
             self._save_plot(fig2,'MinusMinimalR')
@@ -1414,33 +1426,33 @@ class surfacedataset:
             self._save_plot(fig2l,'MinusMinimalRLOG')
             self._save_plot(fig3l,'MaxRLOG')
             self._save_plot(fig4l,'MaxRangeRLOG')
-        
+
         if export == 'mat':
            self.mat_export(matfile)
         if export == 'csv':
-            with open('ymin.csv', 'wb') as f:
+            with open('ymin.csv', w) as f:
                 import csv
                 writer = csv.writer(f)
                 writer.writerow(indicescsv[0])
                 for i in ymincsv:
                     writer.writerow(i)
-                
-            with open('ymax.csv', 'wb') as f:
+
+            with open('ymax.csv', w) as f:
                 import csv
                 writer = csv.writer(f)
                 writer.writerow(indicescsv[0])
                 for i in ymaxcsv:
                     writer.writerow(i)
-                    
-            with open('maxrange.csv', 'wb') as f:
+
+            with open('maxrange.csv', w) as f:
                 import csv
                 writer = csv.writer(f)
                 writer.writerow(indicescsv[0])
                 for i in maxrcsv:
                     writer.writerow(i)
-        
-        
-        
+
+
+
     def multi_seg_stddev(self,step,save=False,average=False,
                          xlim=None,ylim=None,norm=False,export =False):
         data = {}
@@ -1452,7 +1464,7 @@ class surfacedataset:
                                                 plot = False,
                                                 norm = norm)
             count+=1
-        
+
         #Normal plot
         fig2 = plt.figure()
         ax2 = fig2.add_subplot(111)
@@ -1463,14 +1475,14 @@ class surfacedataset:
         indices = []
         if export == 'mat':
             matfile = {}
-        
+
         if export == 'csv':
             indicescsv = []
             stdcsv = []
             errcsv = []
-        
-       
-        for k in data:           
+
+
+        for k in data:
             indices = np.array(sorted(data[k].keys()))
             ystd = [np.nanmean(data[k][i][0].flatten()*1000) for i in indices]
             yerr = [np.nanstd(data[k][i][0].flatten()*1000) for i in indices]
@@ -1482,7 +1494,7 @@ class surfacedataset:
             ax3.plot(indices,ystd,color='b',label=k)
             if export == 'mat':
                 matfile[k+str('_indices')] = indices
-                matfile[k+str('_ystd')] = ystd 
+                matfile[k+str('_ystd')] = ystd
             if average:
                 avstd.append(np.array(ystd))
                 indices = indices
@@ -1490,23 +1502,23 @@ class surfacedataset:
                 indicescsv.append(['Name']+list(indices))
                 stdcsv.append([k]+ystd)
                 errcsv.append([k]+yerr)
-                
-                
-            
-            
+
+
+
+
         if average:
             avmstd = list(np.mean(np.array(avstd),axis=0))
-            with open('Averagestd.csv', 'wb') as f:
+            with open('Averagestd.csv', w) as f:
                 import csv
                 writer = csv.writer(f)
                 writer.writerow(indices)
                 writer.writerow(avmstd)
-            if export == 'mat':    
+            if export == 'mat':
                 matfile[k+str('_average')] = avmstd
             return indices,avmstd
-            
-            
-      
+
+
+
         ax2.set_xlabel('Evaluation lenght (micron)')
         ax2.set_ylabel('Roughness (micron)')
         ax3.set_xlabel('Evaluation lenght (micron)')
@@ -1514,26 +1526,26 @@ class surfacedataset:
         if xlim != None:
             ax2.set_xlim(xlim[0],xlim[1])
             ax3.set_xlim(xlim[0],xlim[1])
-        
+
         if ylim != None:
             ax2.set_ylim(ylim[0],ylim[1])
             ax3.set_ylim(ylim[0],ylim[1])
-            
-        
-        
-        colormap = plt.cm.gist_ncar #nipy_spectral, Set1,Paired   
-        
+
+
+
+        colormap = plt.cm.gist_ncar #nipy_spectral, Set1,Paired
+
 
         handles, labels = ax2.get_legend_handles_labels()
         # sort both labels and handles by labels
         labels, handles = list(zip(*sorted(zip(labels, handles), key=lambda t: t[0])))
         colors = [colormap(i) for i in np.linspace(0, 0.9,len(ax2.lines))]
         for i,j in enumerate(ax2.lines):
-            j.set_color(colors[i])        
-        
+            j.set_color(colors[i])
+
         ax2.legend(handles, labels,prop={'size':8},loc=4)
-        #FOR THE LOG PLOT   
-        #sort both labels and handles by labels        
+        #FOR THE LOG PLOT
+        #sort both labels and handles by labels
         handles, labels = ax3.get_legend_handles_labels()
         labels, handles = list(zip(*sorted(zip(labels, handles), key=lambda t: t[0])))
         colors = [colormap(i) for i in np.linspace(0, 0.9,len(ax3.lines))]
@@ -1543,39 +1555,39 @@ class surfacedataset:
         ax3.set_yscale('log')
         ax3.set_xscale('log')
         plt.tight_layout()
-        
+
         self.log.append('multi_seg_stddev. Step: %s' %(step))
         if save:
             self._save_plot(fig2,'Roughness')
             self._save_plot(fig3,'RoughnessLOG')
-        
+
         if export == 'mat':
             self.mat_export(matfile)
-        
+
         if export == 'csv':
-            with open('multistd.csv', 'wb') as f:
+            with open('multistd.csv', w) as f:
                     import csv
                     writer = csv.writer(f)
                     writer.writerow(indicescsv[0])
                     for i in stdcsv:
                         writer.writerow(i)
-            with open('multistd_errors.csv', 'wb') as f:
+            with open('multistd_errors.csv', w) as f:
                     import csv
                     writer = csv.writer(f)
                     writer.writerow(indicescsv[0])
                     for i in errcsv:
                         writer.writerow(i)
-        
-        
-            
+
+
+
         return indices,ystd
-   
+
     def subdivide_in_multipleROIs(self,nrows,ncols,saveindexes=True):
         if self.ROIs_dataset is None:
-               self.ROIs_dataset = surfacedataset()        
-        
+               self.ROIs_dataset = surfacedataset()
+
         for num, surf in enumerate(self.surfaces):
-            arr = surf.array            
+            arr = surf.array
             h, w = arr.shape
             yicr = h/ncols
             xicr = w/nrows
@@ -1592,8 +1604,8 @@ class surfacedataset:
                     if saveindexes:
                         surf.ROIs_indices[suffix] = (y1,y2,x1,x2)
 
-             
-    
+
+
     def crop(self,y1,y2,x1,x2,toROIdataset=False,suffix = None,
              saveindexes = False):
         if toROIdataset:
@@ -1610,34 +1622,34 @@ class surfacedataset:
                 i.crop(y1,y2,x1,x2,suffix=suffix)
                 if saveindexes:
                     i.ROIs_indices[suffix] = (y1,y2,x1,x2)
-        
+
     def ROIinteractive_select(self,surface_index = 0,cropall= False,
                               savetoROIsDS=True,copyindextoothers=True,
                               deleteindexes=False):
-                                  
+
         self.surfaces[surface_index].ROIinteractive_select(save='indices')
         time.sleep(1)
         for ROIkey in list(self.surfaces[surface_index].ROIs_indices.keys()):
             y1,y2,x1,x2 = self.surfaces[surface_index].ROIs_indices[ROIkey]
-            
+
             if savetoROIsDS:
                self.crop(y1,y2,x1,x2,toROIdataset=True,suffix=ROIkey)
-               
+
             if cropall:
                 self.crop(y1,y2,x1,x2,suffix=ROIkey)
-                
-            
+
+
             print("done for %s" %(ROIkey))
         if copyindextoothers:
                 indexes = self.surfaces[surface_index].ROIs_indices
                 for i in self.surfaces:
                     i.ROIs_indices = indexes
-        
+
         if deleteindexes:
             for surf in self.surfaces:
                 surf.ROIs_indices = {}
-                
-    
+
+
     def export_spatio_temporal_profile(self,row = None,
                                        column = None,
                                        start = 0,
@@ -1645,13 +1657,13 @@ class surfacedataset:
                                        name = 'ouput.csv',
                                        cut_name = [0,None]):
         """
-        
+
         Visualizing the results with pandas and seaborn
         data = pd.read_csv('ouput.csv',na_values = '--')
-        sns.tsplot(data = data, time = 'X', value = 'Height', 
-        unit = 'Index',condition = 'Name')     
-        """        
-        with open(name, 'wb') as f:
+        sns.tsplot(data = data, time = 'X', value = 'Height',
+        unit = 'Index',condition = 'Name')
+        """
+        with open(name, w) as f:
             import csv
             writer = csv.writer(f)
             writer.writerow(['X','Height','Index','Name','Date',])
@@ -1672,23 +1684,23 @@ class surfacedataset:
                                             surf.name[cut_name[0]:cut_name[1]],
                                             surf.parameters.date]
                             writer.writerow(csv_row)
-            
-    
+
+
     def Segmentation_Distribution(self,side,kind=[1],bins='opti',
                                   includeOL=False,normed=True,margin=None):
-        
+
         figH = plt.figure()
-        axb =figH.add_subplot(111)        
-        kinds = {1:"Sq ",2:"Ssk ",3:"Sku "} 
+        axb =figH.add_subplot(111)
+        kinds = {1:"Sq ",2:"Ssk ",3:"Sku "}
         name = "".join([kinds[i] for i in kind])
         if bins == 'opti':
             opti = [np.linspace(0,10,100),np.linspace(-3,3,200),np.linspace(-2,2,100)]
             if includeOL:
                 opti = [[-10]+i+[100] for i in opti]
             bins = [ opti[i-1] for i in kind]
-        from scipy.stats.mstats import skew, kurtosis 
+        from scipy.stats.mstats import skew, kurtosis
         import csv
-        with open('Segmentation_distribution_%s.csv' %(name), 'wb') as f, open('Dataset Seg %s.csv' %(name), 'wb') as h:
+        with open('Segmentation_distribution_%s.csv' %(name), w) as f, open('Dataset Seg %s.csv' %(name), w) as h:
             writer = csv.writer(f)
             datasetwriter = csv.writer(h)
             writer.writerow(['Sample Name',
@@ -1696,14 +1708,14 @@ class surfacedataset:
                              'Skweness',
                              'Kurtosis',
                              'Average'])
-            
-           
+
+
             for i in self.surfaces:
                 if i.sample_infos != None:
                     label = i.sample_infos.label
                 else:
                     label= i.name
-                    
+
                 xdata = []
                 for ki,binsx in zip(kind,bins):
                     data = i.Segmentation(side,kind=ki,margin=margin).flatten()
@@ -1711,13 +1723,13 @@ class surfacedataset:
                     if ki == 1:
                         data = data*1000
                     histo = axb.hist(data,bins=binsx,
-                                     facecolor="r", 
+                                     facecolor="r",
                                      histtype = 'step',
                                      label=label,
                                      normed=normed)
                     xdata.extend(histo[0])
 
-                             
+
                 fields = [
                     i.name,
                     np.std(data),
@@ -1726,12 +1738,12 @@ class surfacedataset:
                     np.mean(data)]
                 writer.writerow(fields)
                 datasetwriter.writerow(xdata)
-                
-                
-        
+
+
+
         axb.set_ylabel('Numbers of values')
         axb.set_xlabel('Roughness ( $\mu m$)')
-        colormap = plt.cm.gist_ncar #nipy_spectral, Set1,Paired  
+        colormap = plt.cm.gist_ncar #nipy_spectral, Set1,Paired
         colorst = [colormap(i) for i in np.linspace(0, 0.9,len(axb.patches))]
         self.log.append('Divided surfaces in pathes. Side %s' %(side))
         self.log.append('For every path has been calulated: %s' %(name))
@@ -1741,7 +1753,7 @@ class surfacedataset:
         for t,j1 in enumerate(axb.patches):
                 j1.set_color(colorst[t])
         axb.legend()
-    #Utilities 
+    #Utilities
     def PCA(self):
         shape = self.surfaces[0].array.shape
         nxpmatrix =[]
@@ -1755,58 +1767,58 @@ class surfacedataset:
         sklearn_pca = sklearnPCA(n_components=3)
         sklearn_transf = sklearn_pca.fit_transform(np.array(nxpmatrix))
 
-        
+
         fig = plt.figure()
         ax = fig.add_subplot(111)
-      
+
         c1exp_variance= round(sklearn_pca.explained_variance_ratio_[0]*100,2)
         c2exp_variance= round(sklearn_pca.explained_variance_ratio_[1]*100,2)
         ax.set_xlabel('First component (%s %%)' %(c1exp_variance))
         ax.set_ylabel('Second component (%s %%)' %(c2exp_variance))
- 
-        ax.scatter(sklearn_transf[:,0],sklearn_transf[:,1])  
+
+        ax.scatter(sklearn_transf[:,0],sklearn_transf[:,1])
         ax.legend()
         ax.set_title('Score Plot (Correlation Matrix)')
-        
+
         #Loadings
-        
+
         loadings = sklearn_pca.components_
-        
+
         # I've omitted the code to create ind; a list of the indexes of the
         # loadings ordered by distance from origin.
-        
+
         fig3 = plt.figure()
         ax3 = fig3.add_subplot(111)
         ax3.scatter(*loadings, alpha=0.3, label="Loadings");
-        
-        
+
+
         ax3.set_title("Loading plot")
         ax3.set_xlabel("Loadings on PC1")
         ax3.set_ylabel("Loadings on PC2")
         ax3.grid()
-        
-        
+
+
         fig4 = plt.figure()
         ax4 = fig4.add_subplot(111)
         ax4.pcolormesh(loadings[0].reshape(shape))
-        
-        
+
+
         ax4.set_title("Loading plot")
         ax4.set_xlabel(" PC1  (pt)")
         ax4.set_ylabel("Arbitrary")
 
-        
+
         fig5 = plt.figure()
         ax5 = fig5.add_subplot(111)
         ax5.pcolormesh(loadings[1].reshape(shape))
-        
-        
+
+
         ax5.set_title("Loading plot")
         ax5.set_xlabel(" PC2  (pt)")
         ax5.set_ylabel("Arbitrary")
         self.log.append('Performed PCA')
-   
-            
+
+
     def align_surfaces(self,iteration=30,remove_mask=False,usemask=False):
         import imreg_dft as ird
         if usemask:
@@ -1821,17 +1833,17 @@ class surfacedataset:
         for surf in self.surfaces[1:]:
             surf.array= ird.similarity(self.surfaces[0].array,surf.array)['timg']
         self.log.append('Surface alligment')
-    
-    
-        
-    
+
+
+
+
     def rename_with_label(self):
         '''
         Use labels instead of filenames for legends
         '''
         for sur in self.surfaces:
             sur.name = sur.sample_infos.label
-    
+
     def export_LaTeX_report(self,
                             ADF=True,
                             Total=True,
@@ -1893,7 +1905,7 @@ class surfacedataset:
         r"\tableofcontents",
         r"	\tableofcontents",
         r"",
-        r"",	
+        r"",
         r"	\begin{landscape}       ",
         r"\section{Summary table}",
         r"	\begin{center}  ",
@@ -1912,24 +1924,24 @@ class surfacedataset:
         r"			 \\ \hline      ",
         r"",
         r"			\hline  ",
-        r"",			
+        r"",
         r"			\hline  "]
-        
+
         body = [r"		\end{longtable}   ",
-        r"",		
+        r"",
         r"	\end{center}    ",
         r"		\end{landscape} ",
         r"		\newpage\null\thispagestyle{empty}\newpage      ",
-        r"",		
+        r"",
         r"		\twocolumn      ",
         r"		\section{Measurements}  ",
         r"",]
-        
+
         for i in sorted(diz, key= diz.get):
                self._plots_save(i,ADF = ADF, Total = Total,
                                 SNR = SNR, titles= False,
                                 orientation = cbarorientation)
-               
+
         with open('report.tex','w') as f:
            for i in header: f.write(i+n)
            for a in sorted(diz, key= diz.get):
@@ -1994,7 +2006,7 @@ class surfacedataset:
                 f.write(r"\centering      "+n)
                 adf = 'Results/%s ADF.png' %(b.name)
                 f.write(r"\includegraphics[width=1\linewidth]{%s}" %(adf)+n)
-                caption=""" The lines correspond to the winzoring at minus 
+                caption=""" The lines correspond to the winzoring at minus
                 three sigma and plus three sigma"""
                 f.write(r"\caption{The ADF function. %s}" %(caption)+n)
                 f.write(r"\label{fig:adf}    "+n)
@@ -2005,10 +2017,10 @@ class surfacedataset:
                 f.write(r"\caption{Surface distances map. }"+n)
                 f.write(r"\label{fig:adf}    "+n)
                 f.write(r"\end{figure}    "+n)
-                
-                
-                
-                
+
+
+
+
                 f.write(r"\subsubsection*{Acquisition parameters:}"+n)
                 f.write(r"\begin{center}  "+n)
                 f.write(r"\begin{tabular}{ | l| l| }      "+n)
@@ -2018,7 +2030,7 @@ class surfacedataset:
                 f.write(r"\\      "+n)
                 f.write(r"\hline  "+n)
                 par2 = str(b.lens.X_laser_Spot_Size)
-                f.write(r"\textbf{Laser spot size}& %s $\mu m$" %(par2)+n) 
+                f.write(r"\textbf{Laser spot size}& %s $\mu m$" %(par2)+n)
                 f.write(r"\\      "+n)
                 f.write(r"\hline  "+n)
                 par3 = str(b.lens.Repeatability)
@@ -2026,7 +2038,7 @@ class surfacedataset:
                 f.write(r"\\      "+n)
                 f.write(r"\hline  "+n)
                 par4 =str(round((b.lens.LENS_MAXd - b.lens.LENS_MINd),2))
-                f.write(r"\textbf{Measurement range}& %s mm" %(par4)+n) 
+                f.write(r"\textbf{Measurement range}& %s mm" %(par4)+n)
                 f.write(r"\\      "+n)
                 f.write(r"\hline  "+n)
                 par5 = str(b.parameters.laserpower)
@@ -2045,15 +2057,15 @@ class surfacedataset:
                 f.write(r"\textbf{Stage step}& %s $\mu m$"  %(par8)+n)
                 f.write(r"\\ "+n)
                 f.write(r"\hline  "+n)
-                f.write(r""+n)					
-                f.write(r""+n)					
+                f.write(r""+n)
+                f.write(r""+n)
                 f.write(r"\end{tabular}   "+n)
                 f.write(r"\end{center}    "+n)
                 #f.write(r"\newpage    "+n)
                 #PROCESSING
                 f.write(r"\subsubsection*{Processing:}    "+n)
                 f.write(r"\begin{center}  "+n)
-                f.write(r""+n)				
+                f.write(r""+n)
                 f.write(r"\begin{tabularx}{0.49\textwidth}{ |p{3cm}| X| }      "+n)
                 f.write(r"\hline  "+n)
                 par9 = b.log['Missing Value correction']
@@ -2068,15 +2080,15 @@ class surfacedataset:
                 f.write(r"\textbf{Bad values filter}& %s " %(par11)+n)
                 f.write(r"\\      "+n)
                 f.write(r"\hline  "+n)
-                f.write(r""+n)							
-                f.write(r""+n)							
+                f.write(r""+n)
+                f.write(r""+n)
                 f.write(r"\end{tabularx}   "+n)
                 f.write(r"\end{center}    "+n)
-                
+
                 #QUALITY ASSESMENT PARAMTERS
                 f.write(r"\subsubsection*{Quality assessment parameters:} "+n)
-                f.write(r"\begin{center}	"	+n)		
-                f.write(r""+n)				
+                f.write(r"\begin{center}	"	+n)
+                f.write(r""+n)
                 f.write(r"\begin{tabular}{ | l| l| }      "+n)
                 f.write(r"\hline  "+n)
                 f.write(r"\textbf{SNR}& %s" %(str(b.log['SNR']))+n)
@@ -2084,7 +2096,7 @@ class surfacedataset:
                 f.write(r"\hline  "+n)
                 par13 =str( b.log['Calculated spot diameter'])
                 f.write(r"\textbf{Sampling lenght}& %s $\mu m$"
-                 %(par13) + n) 
+                 %(par13) + n)
                 f.write(r"\\      "+n)
                 f.write(r"\hline  "+n)
                 par14 = str(b.log['Number of missing value'])
@@ -2093,9 +2105,9 @@ class surfacedataset:
                 f.write(r"\hline  "+n)
                 f.write(r""+n)
                 par15 = str(b.log['supplementary rows'])
-                f.write(r"\textbf{Deleted columns}& %s" %(par15) +n) 
+                f.write(r"\textbf{Deleted columns}& %s" %(par15) +n)
                 f.write(r"\\      "+n)
-                f.write(r"\hline	"	+n)			
+                f.write(r"\hline	"	+n)
                 f.write(r"\end{tabular}   "+n)
                 f.write(r"\end{center}    "+n)
                 f.write(r"\subsubsection*{Quality control:}   "+n)
@@ -2126,9 +2138,9 @@ class surfacedataset:
                 f.write(r""+n)
                 f.write(r"\newpage      "+n)
            f.write(r"\end{document}"+n)
-           
-           
-            
+
+
+
     def _plots_save(self, surf,
                     flipyax=None,
                     ADF=True,
@@ -2148,17 +2160,17 @@ class surfacedataset:
         import gc
         print('Plotting...')
         # Save reslts
-        
-        title = True if titles else False       
+
+        title = True if titles else False
         plotF= surf.plot(mode=2,plot=False,title = title,
                          orientation = orientation)
         try:
             if flipyax == -1:
                 plt.gca().invert_yaxis()
                 plt.gca().invert_xaxis()
-            self._save_plot(plotF,'%s SM' %(surf.name))  
-            
-            
+            self._save_plot(plotF,'%s SM' %(surf.name))
+
+
         except MemoryError:
             print('Size exceed memory limits,diluting data...')
             plotF = self.plot(mode=2, plot=False, unit='micron',dilution=2,
@@ -2167,7 +2179,7 @@ class surfacedataset:
                 plt.gca().invert_yaxis()
                 plt.gca().invert_xaxis()
             self._save_plot(plotF,'%s SM' %(surf.name))
-            
+
         plt.close()
         gc.collect()
         print('ADF...')
@@ -2177,8 +2189,8 @@ class surfacedataset:
                             vmaxx = '+3sigma')
             self._save_plot(ADFv,'%s ADF' %(surf.name))
             plt.close()
-        
- 
+
+
 
         if surf.sample_infos is not None:
 
@@ -2202,19 +2214,19 @@ class surfacedataset:
                     plt.gca().invert_yaxis()
                     plt.gca().invert_xaxis()
                 self._save_plot(plotSNR,'%s SNR' %(surf.name))
-                
+
             except MemoryError:
                 print('Size exceed memory limits,diluting data...')
                 plotSNR = surf.SNR(plot=True,dilution=2,
                                    title = title, orientation = orientation)[0]
                 if flipyax == -1:
                     plt.gca().invert_yaxis()
-        
+
                 self._save_plot(plotSNR,'%s SNR' %(surf.name))
             plt.close()
 
-            gc.collect() 
-            
+            gc.collect()
+
         if Total:
             plotTotal = surf.Total(plot=True, cmap ='d',
                                    title = title, orientation = orientation)[0]
@@ -2223,31 +2235,31 @@ class surfacedataset:
                     plt.gca().invert_yaxis()
                     plt.gca().invert_xaxis()
                 self._save_plot(plotTotal,'%s Total' %(surf.name))
-                
+
             except MemoryError:
                 print('Size exceed memory limits,diluting data...')
                 plotTotal = surf.Total(plot=True,dilution=2,
                                        title = title, orientation = orientation)[0]
                 if flipyax == -1:
                     plt.gca().invert_yaxis()
-        
+
                 self._save_plot(plotTotal,'%s Total' %(surf.name))
             plt.close()
 
-            gc.collect() 
-          
+            gc.collect()
+
     def get_QualityControl(self):
         for i in  self.surfaces:
             i._get_QualityControl()
     def _mk_results_folder(self):
          if not path.exists('Results'):
             makedirs('Results')
-    
-            
+
+
     def _save_plot(self,fig,name,dpi = 100):
         self._mk_results_folder()
         fig.savefig(path.join('Results',name), dpi = dpi)
-    
+
     def _save_data2csv(self,name,header,data,surfname,firstcell):
         '''
          Save data using this format
@@ -2256,7 +2268,7 @@ class surfacedataset:
          [srufname ][1] | [data ][1]
          [srufname ][2] | [data ][2]
         '''
-        with open('%s.csv' %(name), 'wb') as f:
+        with open('%s.csv' %(name), w) as f:
             import csv
             writer = csv.writer(f)
             writer.writerow([firstcell]+header)

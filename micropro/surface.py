@@ -2,6 +2,10 @@
 Spyder Editor
 This is a script to elaborate data form ths profilometer.
 """
+from __future__ import print_function
+if hasattr(__builtins__, 'raw_input'):
+    input = raw_input
+# Python 2.7 backward compatibility -end
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
@@ -44,7 +48,7 @@ class ns:
             self.finepower = None
             self.coursepower = None
             self.time = {'start': None, 'finish': None, 'duration': None}
-            self.plane_subtraction_coef = None 
+            self.plane_subtraction_coef = None
 
     def __init__(self, path, lens=None,init=True):
         self.path = path
@@ -79,7 +83,7 @@ class ns:
             'Calculated spot diameter': 'n.d'}
         if init:
             try:
-                self.inizialize()                
+                self.inizialize()
             except IOError:
                 print('No files found!')
 
@@ -100,7 +104,7 @@ class ns:
         self.array = np.ma.masked_invalid(self.array)
         if path:
             base = getcwd() + '\\' +base
-    
+
         with open(base + '.acs_Info.txt') as f:
             for i in f:
                 g = i.split(':')
@@ -115,12 +119,12 @@ class ns:
         self.parameters.numcols = float(self.header['Columns'].split()[0])
         self.parameters.numrows = float(self.header['Rows'].split()[0])
         self.parameters.stage_step = float(self.header['Scanning Step x'].split()[0])
-        self.parameters.offset = 0 
-        
+        self.parameters.offset = 0
 
-        
+
+
         return g
-        
+
     def inizialize(self):
         '''
         This is a inzizlizing fucntion design to retrieve data form the header
@@ -336,7 +340,7 @@ class ns:
                 self.header['fine_Pwr'])
             self.parameters.coursepower = float(
                 self.header['course_Pwr'])
-            
+
         self.log = {
             'supplementary rows': '0',
             'supplementary columns': '0',
@@ -376,7 +380,7 @@ class ns:
                 b = arr.reshape(-1, self.parameters.numcols + g)
             srx = b.shape[0] - self.parameters.numrows
             scx = b.shape[1] - self.parameters.numcols
-            print(" I am trying to fix it passing %s for rows and %s for coloumns" % (srx, scx))            
+            print(" I am trying to fix it passing %s for rows and %s for coloumns" % (srx, scx))
             self.parameters.numrows += srx
             self.parameters.numcols += scx
             self.log['supplementary rows'] = srx
@@ -384,15 +388,15 @@ class ns:
             print("Now I am correcting the x-y range")
             self.parameters.rangeY += srx*self.parameters.stage_step
             self.parameters.rangeX += scx*self.parameters.stage_step
-            
+
         else:
             b = arr.reshape(-1, self.parameters.numcols)
         self.array = b
-        
-        
 
 
-    def Total(self, matrix=False, plot='show', 
+
+
+    def Total(self, matrix=False, plot='show',
             cartesian=True, absolute=False, replacewith=0,dilution=False,
             QC=False,cmap='d',title=True, orientation = 'auto'
             ):
@@ -468,11 +472,11 @@ class ns:
                     b = np.flipud(b)
                 if dilution is not False:
                     b = b[::dilution,::dilution]
-       
+
                 if cmap == 'c':
                     mesh = axs.pcolormesh(b)
-                    cbar = figs.colorbar(mesh, orientation=orientation)                
-                
+                    cbar = figs.colorbar(mesh, orientation=orientation)
+
                 if cmap == 'd':
                     bounds = np.array([900,1200,16000,18000])
                     import matplotlib.colors as colors
@@ -480,16 +484,16 @@ class ns:
                     mesh = axs.pcolormesh(b, norm=norm, cmap='rainbow')
                     mesh.cmap.set_over('white')
                     mesh.cmap.set_under('black')
-                    cbar = figs.colorbar(mesh, 
+                    cbar = figs.colorbar(mesh,
                                         ax=axs,
                                         extend='both',
                                         orientation=orientation)
                     cbar.set_ticks([900,1050,1200,8600,16000,17000,18000])
-                    cbar.set_ticklabels([900,'aceptable',1200,'optimal',16000,'aceptable',18000])                
-                
-                
-                
-                
+                    cbar.set_ticklabels([900,'aceptable',1200,'optimal',16000,'aceptable',18000])
+
+
+
+
                 cbar.set_label('Total (Raw value)')
 
                 if absolute:
@@ -534,24 +538,24 @@ class ns:
                     axs.invert_yaxis()
                 if title:
                     axs.set_title('Total plot %s' % (self.name))
-                
+
                 if QC:
                     from matplotlib.widgets import Button
                     plt.subplots_adjust(bottom=0.2)
-                    def update(status):   
+                    def update(status):
                             self.logQC['Total-QC'] = status
                             plt.close(figs)
-        
+
                     class Index:
                         ind = 0
                         def passed(self, event):
                             update('Passed')
-                            
-                    
+
+
                         def failed(self, event):
                             update('Failed')
-                   
-                    
+
+
                     callback = Index()
                     axprev = plt.axes([0.7, 0.05, 0.1, 0.075])
                     axnext = plt.axes([0.81, 0.05, 0.1, 0.075])
@@ -565,8 +569,8 @@ class ns:
         self.log['Total'] = round(np.mean(a), 2)
         print('Average Total: %s' % (self.log['Total']))
         return figs, b
-        
-    def SNR(self, matrix=False, plot='show', 
+
+    def SNR(self, matrix=False, plot='show',
             cartesian=True, absolute=False, replacewith=0,dilution=False,
             display='percentage',QC = False,cmap = 'c',title=True,
             orientation = 'auto' ):
@@ -642,7 +646,7 @@ class ns:
                     b = np.flipud(b)
                 if dilution is not False:
                     b = b[::dilution,::dilution]
-                    
+
                 if display == 'percentage':
                     b = b/10.24
                     bounds = np.array([30,50,100])
@@ -650,31 +654,31 @@ class ns:
                     tiks_lab = [30,'aceptable',50,'accurate',100]
                     labelKJ = 'SNR (%)'
                 else:
-                    mesh = axs.pcolormesh(b)                   
+                    mesh = axs.pcolormesh(b)
                     bounds = np.array([307,512,1024])
                     labelKJ = 'SNR (Raw value)'
                     tiks = [307,409,512,768,1024]
                     tiks_lab = [307,'aceptable',512,'accurate',1024]
-                
+
                 if cmap == 'c':
                     mesh = axs.pcolormesh(b)
-                    cbar = figs.colorbar(mesh, orientation=orientation)                
-                
+                    cbar = figs.colorbar(mesh, orientation=orientation)
+
                 if cmap == 'd':
-                    
+
                     import matplotlib.colors as colors
                     norm = colors.BoundaryNorm(boundaries=bounds, ncolors=256)
                     mesh = axs.pcolormesh(b, norm=norm, cmap='brg')
                     mesh.cmap.set_under('black')
-                    cbar = figs.colorbar(mesh, 
+                    cbar = figs.colorbar(mesh,
                                         ax=axs,
                                         extend='min',
                                         orientation=orientation)
                     cbar.set_ticks(tiks)
-                    cbar.set_ticklabels(tiks_lab)                
-                
+                    cbar.set_ticklabels(tiks_lab)
+
                 cbar.set_label(labelKJ)
-                
+
                 if absolute:
                     start, end = axs.get_xlim()
                     xticks = ticker.FuncFormatter(
@@ -715,27 +719,27 @@ class ns:
                 axs.set_ylim(0, b.shape[0])
                 if cartesian == False:
                     axs.invert_yaxis()
-                
+
                 if title:
                     axs.set_title('SNR plot %s' % (self.name))
-                
+
                 if QC:
                     from matplotlib.widgets import Button
                     plt.subplots_adjust(bottom=0.2)
                     def update(status):
                             self.logQC['SNR-QC'] = status
                             plt.close(figs)
-        
+
                     class Index:
                         ind = 0
                         def passed(self, event):
                             update('Passed')
-                            
-                    
+
+
                         def failed(self, event):
                             update('Failed')
-                   
-                    
+
+
                     callback = Index()
                     axprev = plt.axes([0.7, 0.05, 0.1, 0.075])
                     axnext = plt.axes([0.81, 0.05, 0.1, 0.075])
@@ -749,12 +753,12 @@ class ns:
         self.log['SNR'] = round(np.mean(a), 2)
         print('Average SNR: %s' % (self.log['SNR']))
         return figs, b
-    
+
     def find_best_sphere(self):
         for line in self.array:
             pass
-            
-        
+
+
     def diagnose(self, b, numcols, numrows, v=False):
         '''
         Method of ns class.
@@ -799,7 +803,7 @@ class ns:
             print("num cols:", numcols)
             print("cols per rows", numrows * numcols)
             print('SHAPE:', b.shape)
-            
+
     def checkID(self):
         plt.ioff()
         if self.sample_infos != None:
@@ -811,22 +815,22 @@ class ns:
                 label = self.sample_infos.label
                 ax1t.set_title('IMGNAME: %s,%s SCAN: %s' %(imgname,label,self.name))
                 from matplotlib.widgets import Button
-                
+
                 plt.subplots_adjust(bottom=0.2)
                 def update(status):
                         self.logQC['MatchingID'] = status
                         plt.close(fig2t)
-                        
+
 
                 class Index:
                     ind = 0
                     def passed(self, event):
                         update('Passed')
-                        
-                
+
+
                     def failed(self, event):
                         update('Failed')
-                
+
                 callback = Index()
                 axprev = plt.axes([0.7, 0.05, 0.1, 0.075])
                 axnext = plt.axes([0.81, 0.05, 0.1, 0.075])
@@ -836,18 +840,18 @@ class ns:
                 bprev.on_clicked(callback.failed)
                 plt.show()
                 return True
-           
-                
+
+
         else:
             return False
-                
+
     def QualityControl(self,user = 'GM'):
         folderpath = self.path[:-len(self.name)]
         from os import path
-        
+
         if folderpath == '':
             folderpath = getcwd()
-        
+
         files = listdir(folderpath)
         if 'QC-Failed.txt' in files:
             print("*********WARNING*********")
@@ -858,10 +862,10 @@ class ns:
         elif 'QC-Passed.txt' not in files:
             plt.switch_backend("Qt4Agg")
             try:
-                self.checkID() 
+                self.checkID()
             except IndexError:
                 print("No image found!")
-               
+
             self.plot(cm='dist',QC=True)
             self.SNR(QC=True,cmap='d')
             try:
@@ -869,7 +873,7 @@ class ns:
             except IOError:
                 print("No total found!")
             self.mfilter()
-            self.subtractplane(QC=True)       
+            self.subtractplane(QC=True)
             self.plot(QC=True)
             status = 'Passed'
             if 'Failed' in list(self.logQC.values()):
@@ -886,20 +890,20 @@ class ns:
             print("Quality Control: %s" %(status))
             self.logQC['user'] = user
             self.logQC['result'] = status
-            
+
     def _get_QualityControl(self,user = 'GM'):
         folderpath = self.path[:-len(self.name)]
         if folderpath == '':
             folderpath = getcwd()
         files = listdir(folderpath)
-        if 'QC-Failed.txt' in files:    
+        if 'QC-Failed.txt' in files:
             self.logQC['result'] = 'Failed'
         elif 'QC-Passed.txt' not in files:
             self.logQC['result'] = 'Not Performed'
         elif 'QC-Passed.txt' in files:
             self.logQC['result'] = 'Passed'
-        
-        
+
+
     def checkmissing(self, replacewith=np.nan, repair=True, snr=False, sr=0):
         '''
         This is an important function that should be run every time you process
@@ -929,7 +933,7 @@ class ns:
             It wirte the self.missingvaluesarray parameter.
 
         '''
- 
+
         if not path.exists(self.path + '.tag'):
             print('File TAG do not exist')
             self.log['Missing Value correction'] = 'Not performed, no TAG file.'
@@ -1008,7 +1012,7 @@ class ns:
             self.log['Number of missing value'] = np.count_nonzero(
                 missingvalue)
             self.missingvaluesarray = missingvalue
-    
+
     def interpolate_missing(self,method='cubic'):
         from scipy import interpolate
         import gc
@@ -1019,14 +1023,14 @@ class ns:
         xx, yy = np.meshgrid(x, y)
         #get only the valid values
         gc.collect()
-        self.array = interpolate.griddata((xx[~self.array.mask], yy[~self.array.mask]), 
+        self.array = interpolate.griddata((xx[~self.array.mask], yy[~self.array.mask]),
                                   self.array[~self.array.mask].ravel(),
                                   (xx, yy),
                                    method=method)
     def savelog(self):
-   
+
         self._mk_results_folder()
-    
+
 
         with open(r'Results\postprocessing_log.txt', 'w') as f:
             f.write('file name: %s \n' % (self.path))
@@ -1094,13 +1098,13 @@ class ns:
             labelres = 'patch_size'
         else:
             labelres = 'stage_step'
-            
+
         if orientation == 'auto':
             if self.array.shape[0] < self.array.shape[1]:
                 orientation = 'horizontal'
             else:
                 orientation = 'vertical'
-        
+
         if unit == 'um' or unit == 'micron' or unit == 'microns':
             self.parameters.colorbar_label = '($\mu m$) Repeatability=%s $\mu m$' % (
                 self.lens.Repeatability)
@@ -1132,8 +1136,8 @@ class ns:
             minl = self.lens.LENS_MINd
             maxl =self.lens.LENS_MAXd
             midpoint = ( maxl - minl )/2
-             
-            cmap = LinearSegmentedColormap.from_list('mycmap', 
+
+            cmap = LinearSegmentedColormap.from_list('mycmap',
                                                      [(0,
                                                        'red'),
                                                     (0.5, 'green'),
@@ -1146,22 +1150,22 @@ class ns:
         cm_class_str = "<class 'matplotlib.colors.LinearSegmentedColormap'>"
         if str(type(cm)) == cm_class_str :
             cmap = cm
-        
+
         cmap.set_bad('w', 1.)  # set bad values
         if data == '':
             data = self.array
-        #this make the origin to be in the bottom right corner 
+        #this make the origin to be in the bottom right corner
         if cartesian:
             data = np.flipud(data)
-        
+
         if dilution is not False:
             data = data[::dilution,::dilution]
-            
+
         mesh = ax.pcolormesh(data, cmap=cmap, )
         ax.axis('scaled')
         ax.set_xlim(0, self.array.shape[1])
         ax.set_ylim(0, self.array.shape[0])
-        
+
         if cartesian == False:
             ax.invert_yaxis()
 
@@ -1257,7 +1261,7 @@ class ns:
                     vmax=self.lens.LENS_MAXd)
 
         fig.canvas.mpl_connect('key_press_event', press)
-        
+
         if show_ROIs:
             #This works on the indices ROIs not on the ROIS saved
             for roi in list(self.ROIs_indices.keys()):
@@ -1274,7 +1278,7 @@ class ns:
                         verticalalignment='top',color = 'white',
                         bbox = dict(facecolor='black'), family='serif',
                         weight = 'bold')
-        
+
         if rectangle != []:
             from matplotlib.patches import Rectangle
             try:
@@ -1300,32 +1304,32 @@ class ns:
                         linewidth = 3,
                         facecolor='none'))
                 print("ADDED")
-        
 
-                        
+
+
         if QC:
             from matplotlib.widgets import Button
             plt.subplots_adjust(bottom=0.2)
             def update(status):
-                if cm == 'dist':    
+                if cm == 'dist':
                     self.logQC['workingdistance'] = status
                     plt.close(fig)
-                    
+
                 else:
-                    self.logQC['plot-quality'] = status                  
+                    self.logQC['plot-quality'] = status
                     plt.close(fig)
-                    
+
 
             class Index:
                 ind = 0
                 def passed(self, event):
                     update('Passed')
-                    
-            
+
+
                 def failed(self, event):
                     update('Failed')
-           
-            
+
+
             callback = Index()
             axprev = plt.axes([0.7, 0.05, 0.1, 0.075])
             axnext = plt.axes([0.81, 0.05, 0.1, 0.075])
@@ -1339,9 +1343,9 @@ class ns:
             plt.show()
         else:
             return plt
-            
+
     def profile_plot(self, col=None,row=None, start =None, stop =None,vminx=None,
-                     vmaxx=None, unit='mm', absolute=False,mode=False, 
+                     vmaxx=None, unit='mm', absolute=False,mode=False,
                      plot=True,save=False, title = True):
         '''
         plot profile
@@ -1352,7 +1356,7 @@ class ns:
             data = self.array[row][start:stop]
         else:
             print("Select a row or a column")
-        
+
         if unit == 'um' or unit == 'micron' or unit == 'microns':
             self.parameters.colorbar_label = '($\mu m$) Repeatability=%s $\mu m$' % (
                 self.lens.Repeatability)
@@ -1378,8 +1382,8 @@ class ns:
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
-  
-            
+
+
         ax.plot(data)
 
         if absolute:
@@ -1394,20 +1398,20 @@ class ns:
                     float(
                         self.parameters.job_x_origin_mm) +
                     self.parameters.offset))
-         
+
             ax.xaxis.set_ticks(
                 np.arange(
                     start,
                     end,
                     1 /
                     self.parameters.stage_step))
-         
+
 
         else:
             xticks = ticker.FuncFormatter(
                 lambda x, pos: '{0:g}'.format(
                     x * self.parameters.stage_step))
-           
+
 
 
         ax.xaxis.set_major_formatter(xticks)
@@ -1417,27 +1421,27 @@ class ns:
         ax.set_ylabel('(mm)')
         if title:
             ax.set_title('%s' % (self.name))
-           
+
         if save: self._save_plot(fig,'Profile %s.png' %(self.name))
         if plot:
             plt.show()
         else:
             return plt
-            
+
     def tredplotmayavi(self, array='array', show=True,outline=True,
-                       axes=True,colorbar=True,unit='mm', 
+                       axes=True,colorbar=True,unit='mm',
                        cbarorientation='vertical'):
         if array is 'array':
             array = self.array
-        
+
         if unit == 'micron' or unit == 'microns':
             array = array*1000
 
-      
+
 
         from mayavi import mlab
         mlab.figure(1, fgcolor=(0, 0, 0), bgcolor=(1, 1, 1))
-        
+
         if hasattr(array, 'mask'):
             surH = mlab.surf(array, warp_scale='auto', mask=array.mask)
         else:
@@ -1446,7 +1450,7 @@ class ns:
                                    title='Heights (%s)' %(cbunit))
         if outline: mlab.outline()
         if axes: mlab.axes()
-    
+
         if show:
             mlab.show()
         else:
@@ -1457,15 +1461,15 @@ class ns:
                            cbarorientation='vertical', scalars = 'array',save=False):
         if array == 'array':
             array = np.fliplr(self.array.copy())
-            
-        
-                
+
+
+
         X1, Y1 = np.meshgrid(
             np.arange(0, round(array.shape[1] * self.parameters.stage_step, 3),
                       self.parameters.stage_step),
             np.arange(0, round(array.shape[0] * self.parameters.stage_step, 3),
                       self.parameters.stage_step))
-                      
+
         if unit == 'micron' or unit == 'microns':
             array = array*1000
             X1 = X1*1000
@@ -1475,7 +1479,7 @@ class ns:
         elif scalars == '1order':
             scalars = self.subtractplane(order=1,array = array)
         elif scalars == '2order':
-            scalars = self.subtractplane(order=2,array = array)           
+            scalars = self.subtractplane(order=2,array = array)
         elif scalars == 'total':
             figs, scalars = self.Total(plot=False, matrix= True)
         from mayavi import mlab
@@ -1490,7 +1494,7 @@ class ns:
                 mesh = mlab.mesh(X1[:array.shape[0],:array.shape[1]],
                                  Y1[:array.shape[0],:array.shape[1]],
                              array, scalars=scalars)
-                
+
         else:
             print(X1.shape, Y1.shape, array.shape)
             mesh = mlab.mesh(X1[:array.shape[0],:array.shape[1]],
@@ -1505,7 +1509,7 @@ class ns:
         else:
             return mlab
 
-    def tredplot(self, arr=None, stride='auto', plot=True, 
+    def tredplot(self, arr=None, stride='auto', plot=True,
                  title='3D Plot',zprop=True,cm ='cw'):
         from matplotlib import cm
         from mpl_toolkits.mplot3d import Axes3D
@@ -1519,7 +1523,7 @@ class ns:
             colors = cm.coolwarm
         else:
             colors = cm.autumn
-            
+
         colors.set_bad('k')
 
         if arr is None:
@@ -1556,17 +1560,17 @@ class ns:
             cb.set_label('Heights ($\mu m$)')
             ax5.zaxis.set_major_formatter(zticks)
             ax5.set_zlabel('($\mu m$)')
-            
-            
+
+
         else:
             cb = fig.colorbar(surf)
             cb.set_label('Heights (mm)')
-        
-        #For keeping the Z axis with the same dimension 
+
+        #For keeping the Z axis with the same dimension
         if zprop:
             max_range = np.array(
                 [X1.max() - X1.min(), Y1.max() - Y1.min(), zmax - zmin]).max() / 2.0
-    
+
             mid_x = (X1.max() + X1.min()) * 0.5
             mid_y = (Y1.max() + Y1.min()) * 0.5
             mid_z = (zmax + zmin) * 0.5
@@ -1574,7 +1578,7 @@ class ns:
             ax5.set_ylim(mid_y - max_range, mid_y + max_range)
             ax5.set_zlim(mid_z - max_range, mid_z + max_range)
 
-       
+
         ax5.set_xticks(ax5.get_xticks()[1:])
         ax5.set_yticks(ax5.get_yticks()[1:])
         ax5.set_title(title)
@@ -1583,12 +1587,12 @@ class ns:
             plt.show()
         else:
             return plt
-    
+
     def print_quality_index(self):
         if self.sample_infos != None:
             res = self.parameters.stage_step
-            #float(self.sample_infos.width)/res * 
-        
+            #float(self.sample_infos.width)/res *
+
     def delcol(self, snr='.dist', v=False, col2remove=-1):
         '''
         It takes the name of the output file form the profilometer. It returns
@@ -1625,8 +1629,8 @@ class ns:
                       self.parameters.numrows, v)  # Run diagnose errors
         self.array = b
         self.log['method'] = 'inverting the lines'
-    
-    def corners_detector(self, data = 'mask',w = 100,h = 100, 
+
+    def corners_detector(self, data = 'mask',w = 100,h = 100,
                      Kernel_1 = (15,15),
                      Kernel_2 = (200,200),
                      pad_width = 100,
@@ -1640,7 +1644,7 @@ class ns:
             imgo = self.array.mask
         else:
             imgo = data
-            
+
         if h %2 != 0 or w%2 != 0:
             raise Warning('Template widht and height should be even.')
         template = np.ones((w,h),dtype=np.uint8)
@@ -1652,9 +1656,9 @@ class ns:
         t_TR[h/2:,:w/2] = 0 #Top left
         t_BL[:h/2,w/2:] = 0 # Bottom right
         t_BR[:h/2,:w/2] = 0 #Bottom left
-        
+
         templates = {"TR":t_TR, "TL":t_TL,"BR": t_BR,"BL": t_BL}
-        
+
         #Image preprocessing
         kernel = np.ones((Kernel_1[0],Kernel_1[1]),np.uint8)
         imgo = imgo.astype(np.float32)
@@ -1669,7 +1673,7 @@ class ns:
             hz, wz = img.shape
             hp = 0 #this are the subdivision pad
             wp = 0
-            #we subdivide the surface in 4 areas and we search for the template 
+            #we subdivide the surface in 4 areas and we search for the template
             #only in the are wher it should be
             if subdivide:
                 if j == 'TL':
@@ -1689,18 +1693,18 @@ class ns:
             method2 = eval(method)
             res = cv2.matchTemplate(img,template,method2)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-        
+
             # If the method is TM_SQDIFF or TM_SQDIFF_NORMED, take minimum
             if method2 in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
                 top_left = min_loc
             else:
                 top_left = max_loc
-    
+
             corner = (top_left[0] + w/2 -pad_width + wp,
                       top_left[1] + h/2 -pad_width + hp)
             self.corners[j] = corner
             corners.append(corner)
-        
+
 
         #PLOTTING
         if plot:
@@ -1710,49 +1714,49 @@ class ns:
             axT.imshow(self.array) #plot results
             for i in corners:
                 axT.scatter(i[0],i[1])
-                
+
             fig2 = plt.figure()
-            ax = fig2.add_subplot(221)     
+            ax = fig2.add_subplot(221)
             ax.imshow(imgo)
             ax.scatter(corners[0][0], corners[0][1])
             ax.set_xlim(corners[0][0]-180,corners[0][0]+180)
             ax.set_ylim(corners[0][1]-180,corners[0][1]+180)
             ax.set_title('Detected Point')
-            ax.set_xticks([]) 
+            ax.set_xticks([])
             ax.set_yticks([])
-            
+
             ax2 = fig2.add_subplot(222)
             ax2.imshow(imgo)
             ax2.scatter(corners[1][0], corners[1][1])
             ax2.set_xlim(corners[1][0]-180,corners[1][0]+180)
             ax2.set_ylim(corners[1][1]-180,corners[1][1]+180)
             ax2.set_title('Detected Point')
-            ax2.set_xticks([]) 
+            ax2.set_xticks([])
             ax2.set_yticks([])
-        
+
             ax3 = fig2.add_subplot(223)
             ax3.imshow(imgo)
             ax3.scatter(corners[2][0], corners[2][1])
             ax3.set_xlim(corners[2][0]-180,corners[2][0]+180)
             ax3.set_ylim(corners[2][1]-180,corners[2][1]+180)
             ax3.set_title('Detected Point')
-            ax3.set_xticks([]) 
+            ax3.set_xticks([])
             ax3.set_yticks([])
-            
+
             ax4 = fig2.add_subplot(224)
             ax4.imshow(imgo)
             ax4.scatter(corners[3][0], corners[3][1])
             ax4.set_xlim(corners[3][0]-180,corners[3][0]+180)
             ax4.set_ylim(corners[3][1]-180,corners[3][1]+180)
             ax4.set_title('Detected Point')
-            ax4.set_xticks([]) 
+            ax4.set_xticks([])
             ax4.set_yticks([])
             fig2.suptitle("Method:%s Position: %s" %(method,j))
             plt.show()
             gc.collect()
 
-        
-    
+
+
     def centroid_cor(self):
         '''
         This function realling the centroids and create a new matrix. The probe
@@ -1856,52 +1860,52 @@ class ns:
             x = X.flatten()
             y = Y.flatten()
             z = array.flatten()
-        
+
         if order == 1:
             # best-fit linear plane
             A = np.c_[x, y, np.ones(len(x))]
-            C, _, _, _ = scipy.linalg.lstsq(A, z)    # coefficients          
+            C, _, _, _ = scipy.linalg.lstsq(A, z)    # coefficients
             # evaluate it on grid
             Z = C[0] * X + C[1] * Y + C[2]
-            
+
         if order == 2:
             xy = np.dstack((x,y))[0]
             A = np.c_[np.ones(len(x)), xy,np.prod(xy, axis=1), xy**2]
             C,_,_,_ = scipy.linalg.lstsq(A, z)
             #Z = np.dot(np.c_[np.ones(x.shape), x, y, x*y, x**2, y**2], C).reshape(array.shape)
             Z = C[4]*X**2. + C[5]*Y**2. + C[3]*X*Y + C[1]*X + C[2]*Y + C[0]
-        
-        # store them in the object            
+
+        # store them in the object
         self.parameters.plane_subtraction_coef = C
         # plot points and fitted surface
         xin= np.arctan((float(Z[0,1])-float(Z[0,0]))/self.parameters.stage_step)/np.pi*180
         yin= np.arctan((float(Z[1,0])-float(Z[0,0]))/self.parameters.stage_step)/np.pi*180
-                 
+
         if plot or QC:
             fig = plt.figure()
             ax = fig.gca(projection='3d')
             ax.plot_surface(X[::, ::dil], Y[::, ::dil], Z[
                             ::, ::dil], rstride=dil, cstride=dil, alpha=0.2)
-            
+
             plt.xlabel('X')
             plt.ylabel('Y')
             ax.set_zlabel('Z')
             ax.axis('equal')
             ax.axis('tight')
             ax.set_title("Inclination: X %.2f$^\circ$ - Y  %.2f$^\circ$" %(xin,yin) )
-            
+
             if refplane:
                 Zref = np.zeros(self.array.shape)+np.mean(self.array.flatten())
                 ax.plot_surface(X[::, ::dil], Y[::, ::dil], Zref[
                             ::, ::dil], rstride=dil, cstride=dil,
                             color='r',alpha=0.2)
-             #For keeping the Z axis with the same dimension 
+             #For keeping the Z axis with the same dimension
             if zprop:
                 zmax = max(z)
                 zmin = min(z)
                 max_range = np.array(
                     [x.max() - x.min(), y.max() - y.min(), zmax - zmin]).max() / 2.0
-        
+
                 mid_x = (x.max() + x.min()) * 0.5
                 mid_y = (y.max() + y.min()) * 0.5
                 mid_z = (zmax + zmin) * 0.5
@@ -1911,20 +1915,20 @@ class ns:
             if QC:
                 from matplotlib.widgets import Button
                 plt.subplots_adjust(bottom=0.2)
-                def update(status):   
+                def update(status):
                         self.logQC['Inclination'] = status
                         plt.close(fig)
-    
+
                 class Index:
                     ind = 0
                     def passed(self, event):
                         update('Passed')
-                        
-                
+
+
                     def failed(self, event):
                         update('Failed')
-               
-                
+
+
                 callback = Index()
                 axprev = plt.axes([0.7, 0.05, 0.1, 0.075])
                 axnext = plt.axes([0.81, 0.05, 0.1, 0.075])
@@ -1934,16 +1938,16 @@ class ns:
                 bprev.on_clicked(callback.failed)
             plt.show()
         # Subtract plane
-        
-        
+
+
         print(r"X axis inclination  %s degrees" %(xin))
         print(r"Y axis inclination  %s degrees" %(yin))
-        
+
         if inverted:
             if hasattr(self.array,"mask"):
                 result = np.ma.array(Z - array.data)
                 result.mask = array.mask
-                
+
             else:
                 result = Z - array
         else:
@@ -1952,12 +1956,12 @@ class ns:
                 result.mask = array.mask
             else:
                 result = array - Z
-                
+
 
         if overwrite:
             self.array = result
             self.log['Best plane correction'] = 'Performed'
-            
+
         if returncalculated_plane:
             return Z
         else:
@@ -1986,7 +1990,7 @@ class ns:
             stdar, meanar = np.std(self.array), np.mean(self.array)
             vminx = meanar - stdar * 2
             vmaxx = meanar + stdar * 2
-        
+
         fig = plt.figure()
         ax = fig.add_subplot(111)
         mesh = plt.pcolormesh(self.array,vmin= vminx, vmax = vmaxx)
@@ -2059,9 +2063,9 @@ class ns:
 
         It can maks also value that have a SNR less then argument snrs (default
         is 500 as suggested by Optimet).
-        
+
         snr can also take snr matrix as input otherwise it will try to use the
-        SNR matrix in the folde. 
+        SNR matrix in the folde.
         '''
         # The firs think to do is masking the np.nans
         self.array = np.ma.masked_invalid(self.array)
@@ -2069,33 +2073,33 @@ class ns:
         if lens:
             if minz is None:
                 minz = self.lens.LENS_MINd - add
-    
+
             if maxz is None:
                 maxz = self.lens.LENS_MAXd + add
-    
+
             if minz == '-sigma':
                 minz = (np.mean(self.array) - np.std(self.array))
-    
+
             if maxz == '+sigma':
                 maxz = (np.mean(self.array) + np.std(self.array))
-    
+
             if minz == '-2sigma':
                 minz = (np.mean(self.array) - 2 * np.std(self.array))
-    
+
             if maxz == '+2sigma':
                 maxz = (np.mean(self.array) + 2 * np.std(self.array))
-    
+
             if minz == '-3sigma':
                 minz = (np.mean(self.array) - 3 * np.std(self.array))
-    
+
             if maxz == '+3sigma':
                 maxz = (np.mean(self.array) + 3 * np.std(self.array))
-    
+
             arrmask = np.ma.masked_outside(self.array, minz - add, maxz + add)
             log+= ' Between %s mm and %s mm' % (round(minz, 3), round(maxz, 3))
         else:
             arrmask = self.array
-            
+
         if snr is not None:
             if snr is True:
                 a = np.fromfile(self.path + '.snr', dtype=np.uint16)
@@ -2123,7 +2127,7 @@ class ns:
                 arrmask.mask = np.ma.mask_or(arrmask.mask, totmask.mask)
             except IOError:
                 print("No total file found!")
-            
+
         if badto == 'nan':
             arrmask[arrmask.mask] = np.nan
         elif badto is None or badto == 'None':
@@ -2133,7 +2137,7 @@ class ns:
         elif badto == 'zero':
             arrmask[arrmask.mask] = 0
         self.array = arrmask
-        self.log['Bad values filter'] = log 
+        self.log['Bad values filter'] = log
         return log
 
 # Data analyzing and instrument performance evaluation
@@ -2499,7 +2503,7 @@ class ns:
             y2=y2*scalingfactor
             x1=x1*scalingfactor
             x2=x2* scalingfactor
-            
+
             if save == 'ROI':
                 self.ROI = self.crop(y1=y1,y2=y2,x1=x1,x2=x2,
                                      copy =True,
@@ -2509,12 +2513,12 @@ class ns:
                 self.crop(y1=y1,y2=y2,x1=x1,x2=x2,
                                      copy =False,
                                      )
-            else: 
+            else:
                 self.ROIs_indices[suffix+str(counter[0])] = (y1,y2,x1,x2)
                 counter[0] +=1
                 print("All ROI indices saved in self.ROI_indices")
-                                  
-                                  
+
+
 
         def toggle_selector(event):
             print(' Key pressed.')
@@ -2539,15 +2543,15 @@ class ns:
         plt.connect('key_press_event', toggle_selector)
         plt.show()
 
-    
+
     def crop(self,y1,y2,x1,x2,copy=False,suffix=False):
-                
+
         if copy:
             import copy
             surf = copy.deepcopy(self)
         else:
             surf = self
-            
+
         surf.array = self.array[y1:y2,x1:x2]
         surf.parameters.numcols = y2-y1
         surf.parameters.numrows = x2-x1
@@ -2556,59 +2560,59 @@ class ns:
         if suffix:
             surf.name = surf.name+suffix
             surf.special_ID = suffix
-        
+
         if copy:
             return surf
-        
+
     def crop_concentric_ROI(self,square_high__mm=1, usecorners = False,corner = 'TL'):
-        #calculate the side of square in pts        
+        #calculate the side of square in pts
         pts = int(round(square_high__mm/self.parameters.stage_step/2,0))
         if usecorners:
-                if self.corners[corner] != None: 
+                if self.corners[corner] != None:
                     x1 = (self.corners['TL'][0] + self.corners['BL'][0])/2.
                     x2 = (self.corners['TR'][0] + self.corners['BR'][0])/2.
                     y1 = (self.corners['TL'][1] + self.corners['TR'][1])/2.
                     y2 = (self.corners['BL'][1] + self.corners['BR'][1])/2.
-                    
+
                     xcent = int(round((x2 - x1)/2 + x1,0))
                     ycent = int(round((y2 - y1)/2 + y1,0))
- 
-                else: 
+
+                else:
                     print("No corners found!")
                     return
-            
-        else:        
+
+        else:
             ycent, xcent = np.array(self.array.shape)/2[0]
-        
+
         self.array = self.array[ycent-pts:ycent+pts,
                                 xcent-pts:xcent+pts]
         surf.parameters.numcols = y2-y1
         surf.parameters.numrows = x2-x1
         surf.parameters.rangeX = square_high__mm
         surf.parameters.rangeY = square_high__mm
-        
-   
-            
+
+
+
     def concentric_ROI(self,step=20,plot='show',save=False):
         from scipy.stats.mstats import skew, kurtosis
         ycent, xcent = np.array(self.array.shape)/2
-        distancefromcenter = []        
+        distancefromcenter = []
         Sq=[]
         Rskw=[]
         Rkurt=[]
-        rectangles = []        
-        
+        rectangles = []
+
         i=1
         while step*i<xcent and step*i<ycent:
             ROI = self.array[ycent-step*i:ycent+step*i,xcent-step*i:xcent+step*i].flatten()
             print(ROI.size)
             distancefromcenter.append(step*i)
             Rskw.append(skew(ROI))
-            Rkurt.append(kurtosis(ROI))     
-            Sq.append(np.std(ROI)*1000)           
+            Rkurt.append(kurtosis(ROI))
+            Sq.append(np.std(ROI)*1000)
             rectangles.append((xcent-step*i,ycent-step*i,step*i*2,step*i*2))
             i+=1
-            
+
         if plot !=False:
             distancefromcenter = np.array(distancefromcenter)*self.parameters.stage_step
             figx = plt.figure()
@@ -2616,57 +2620,57 @@ class ns:
             axt.plot(distancefromcenter,Sq)
             axt.set_xlabel('Distance from the centered ROI (mm)')
             axt.set_ylabel('Sq ($\mu m$)')
-            
+
             if plot == 'show':
-                plt.show()         
+                plt.show()
             if save: self._save_plot(figx,'%s DistVsSq.png' %(self.name))
-            
+
             fig2 = plt.figure()
             ax2 = fig2.add_subplot(111)
-            ax2.plot(distancefromcenter,Rskw,label= 'Skweness') 
+            ax2.plot(distancefromcenter,Rskw,label= 'Skweness')
             ax2.plot(distancefromcenter,Rkurt,label = 'Kurtosis')
             ax2.set_xlabel('Side of the centered ROI (mm)')
             ax2.set_ylabel('Normalized units')
             ax2.legend()
-  
+
             if plot == 'show':
                 plt.show()
                 self.plot(rectangle=rectangles, unit='micron')
-                
+
             if save:
                 self._save_plot(fig2,'%s DistVsSkKur.png' %(self.name))
                 ACD = self.plot(rectangle=rectangles, unit='micron',plot=False)
                 ACD.savefig(r'%s\Results\%s ConcentricROIPlot.png'%(getcwd(),self.name))
                 plt.close()
-    
-            
-            
+
+
+
         return distancefromcenter,Sq,Rskw, Rkurt
 
     def margin_ROI(self,step=20,plot='show',save=False):
         from scipy.stats.mstats import skew, kurtosis
-        import matplotlib.ticker as ticker 
+        import matplotlib.ticker as ticker
         ycent, xcent = np.array(self.array.shape)/2
-        margin = []        
+        margin = []
         Sq=[]
         Rskw=[]
         Rkurt=[]
-        rectangles = []        
-        
+        rectangles = []
+
         i=1
         while step*i<xcent and step*i<ycent:
             ROI = self.array[step*i:-step*i,step*i:-step*i].flatten()
             print(ROI.size)
             margin.append(step*i)
             Rskw.append(skew(ROI))
-            Rkurt.append(kurtosis(ROI))     
-            Sq.append(np.std(ROI)*1000)           
+            Rkurt.append(kurtosis(ROI))
+            Sq.append(np.std(ROI)*1000)
             rectangles.append((step*i,step*i,self.array.shape[1]-step*i*2,
                                self.array.shape[0]-step*i*2))
             print((step*i,step*i,self.array.shape[1]-step*i*2,
                                self.array.shape[0]-step*i*2))
             i+=1
-            
+
         if plot !=False:
             margin = np.array(margin)*self.parameters.stage_step
             figx = plt.figure()
@@ -2674,23 +2678,23 @@ class ns:
             axt.plot(margin,Sq)
             axt.set_xlabel('Margin (mm)')
             axt.set_ylabel('Sq ($\mu m$)')
-            
+
             xticks = ticker.FuncFormatter(
                         lambda x,
                         pos: '{0:g}'.format(
-                            x/self.parameters.stage_step))           
-            
+                            x/self.parameters.stage_step))
+
             axt2 = axt.twiny()
             axt2.set_xlabel('Margin (pt)')
             axt2.xaxis.set_major_formatter(xticks)
-            
+
             if plot == 'show':
-                plt.show()         
+                plt.show()
             if save: self._save_plot(figx,'%s DistVsSq.png' %(self.name))
-            
+
             fig2 = plt.figure()
             ax2 = fig2.add_subplot(111)
-            ax2.plot(margin,Rskw,label= 'Skweness') 
+            ax2.plot(margin,Rskw,label= 'Skweness')
             ax2.plot(margin,Rkurt,label = 'Kurtosis')
             ax2.set_xlabel('Margin (mm)')
             ax2.set_ylabel('Normalized units')
@@ -2698,22 +2702,22 @@ class ns:
             axb2.set_xlabel('Margin (pt)')
             axb2.xaxis.set_major_formatter(xticks)
             ax2.legend()
-  
+
             if plot == 'show':
                 plt.show()
                 self.plot(rectangle=rectangles, unit='micron')
-                
+
             if save:
                 self._save_plot(fig2,'%s MarginVsSkKur.png' %(self.name))
                 ACD = self.plot(rectangle=rectangles, unit='micron',plot=False)
                 ACD.savefig(r'%s\Results\%s MarginROIPlot.png'%(getcwd(),self.name))
                 plt.close()
-    
-            
-            
+
+
+
         return margin,Sq,Rskw, Rkurt
 
-    
+
     def analyize_ROI(self, bottomleftxy, width, height, show=False):
         '''
 
@@ -2743,173 +2747,173 @@ class ns:
         ##  DEFINE SAMPLING LENGHT !!!!
     ####
         from scipy.stats.mstats import skew, kurtosis
-        if self.log['Best plane correction']== 'Not Performed': 
+        if self.log['Best plane correction']== 'Not Performed':
             print('WARINING BEST PLANE NOT PERFORMED!')
         if ROI == None:
             data=self.array
-#        Amplitude parameters        
-#    Rz, maximum height of the profile: defined on the sampling length: 
+#        Amplitude parameters
+#    Rz, maximum height of the profile: defined on the sampling length:
 #        this parameter is frequently used to check whether the profile
 #        has protruding peaks that might affect static or sliding contact
 #        function.
-#    
+#
         Rz = round(np.max(profile)*1000,roundx)
 
-#    Rv, maximum profile valley depth: depth of the deepest valley from 
+#    Rv, maximum profile valley depth: depth of the deepest valley from
 #        the mean line, defined on the sampling length.
-# 
+#
         Rv = round(np.abs(np.min(profile))*1000,roundx)
 
-#    Rt, total height of the profile: height between the deepest valley and 
+#    Rt, total height of the profile: height between the deepest valley and
 #        the highest peak on the evaluation length.
 
         Rt = Rz + Rv
 
-#    Ra, arithmetic mean deviation of the assessed profile: defined on 
+#    Ra, arithmetic mean deviation of the assessed profile: defined on
 #        the sampling length. Ra is used as a global evaluation of the roughness
 #        amplitude on a profile. It does not say anything on the spatial
 #        frequency of the irregularities or the shape of the profile.
 #        Ra is meaningful for random surface roughness (stochastic) machined
-#        with tools that do not leave marks on the surface, such as sand 
+#        with tools that do not leave marks on the surface, such as sand
 #        blasting, milling, polishing
 
         Ra = round(np.sum(np.abs(profile - np.mean(profile))/float(profile.size))*1000,roundx)
-        
-#    Rp, maximum profile peak height: height of the highest peak from the 
+
+#    Rp, maximum profile peak height: height of the highest peak from the
 #        mean line, defined on the sampling length.
-#    
+#
         Rp = Rz - round(np.mean(profile)*1000,roundx)
 
 
-#   
+#
 #    Rq, root mean square deviation of the assessed profile: corresponds to the
 #        standard deviation of the height distribution, defined on the sampling
 #        length. Rq provides the same information as Ra.
         Rq = round(np.std(profile)*1000,roundx)
-#    
-#    Rsk, skewness of the assessed profile: asymmetry of the height 
+#
+#    Rsk, skewness of the assessed profile: asymmetry of the height
 #        distribution, defined on the sampling length. This parameter is
 #        important as it gives information on the morphology of the surface
 #        texture. Positive values correspond to high peaks spread on a regular
 #        surface (distribution skewed towards bottom) while negative values are
 #        found on surfaces with pores and scratches (distribution skewed towards
 #        top). It is therefore interesting when contact or lubrication functions
-#        are required. However, this parameter does not give any information on 
+#        are required. However, this parameter does not give any information on
 #        the absolute height of the profile, contrary to Ra.
-        
+
         Rsk = round(skew(profile.flatten()),roundx)
-#    
-#    Rku, kurtosis of the assessed profile: sharpness of the height 
+#
+#    Rku, kurtosis of the assessed profile: sharpness of the height
 #        distribution, defined on the sampling length.
-#    
+#
         Rku = round(kurtosis(profile.flatten()),roundx)
-        
+
 #    Rc, mean height of profile elements: defined on the evaluation length.
 #        This parameter can be calculated on surfaces having texture cells or
 #        grains. It is similar to the motif parameter R found in ISO 12085 and,
-#        in that sense, it should be considered as a feature parameter 
+#        in that sense, it should be considered as a feature parameter
 #        (see ISO 25178).
-        
+
         Rc = round(np.mean(profile)*1000,roundx)
-        dicmetrology = {'Rz':Rz, 'Rv':Rv, 'Rt':Rt, 'Ra':Ra, 'Rp':Rp, 'Rq':Rq, 
+        dicmetrology = {'Rz':Rz, 'Rv':Rv, 'Rt':Rt, 'Ra':Ra, 'Rp':Rp, 'Rq':Rq,
                         'Rsk':Rsk, 'Rku':Rku, 'Rc':Rc}
         return dicmetrology
-    
 
-    
+
+
     def calculate_area_metrology(self,ROI=None,roundx=3,
                                  margin=None,subtractplane = False):
         from scipy.stats.mstats import skew, kurtosis
-        if self.log['Best plane correction']== 'Not Performed': 
+        if self.log['Best plane correction']== 'Not Performed':
             print('WARINING BEST PLANE NOT PERFORMED!')
         else:
             if subtractplane and self.log['Best plane correction']== 'Performed':
                 print('PLANE ALREADY SUBTRACTED!')
             else:
                 print('calculating...')
-            
+
         if ROI == None:
             data=self.array
         if ROI != None:
             data=self.array[ROI[0]:ROI[1],ROI[2]:ROI[3]]
-            
+
         if margin != None:
             data=data[margin:-margin,margin:-margin]
         if subtractplane:
             data = self.subtractplane(array = data)
-#        Amplitude parameters        
-#    Sz, maximum height of the profile: defined on the sampling length: 
+#        Amplitude parameters
+#    Sz, maximum height of the profile: defined on the sampling length:
 #        this parameter is frequently used to check whether the profile
 #        has protruding peaks that might affect static or sliding contact
 #        function.
-#    
+#
         Sz = round(np.max(data)*1000,roundx)
 
-#    Sv, maximum profile valley depth: depth of the deepest valley from 
+#    Sv, maximum profile valley depth: depth of the deepest valley from
 #        the mean line, defined on the sampling length.
-# 
+#
         Sv = round(np.mean(data)-np.abs(np.min(data))*1000,roundx)
 
 
 
-#    Sar, arithmetic mean deviation of the assessed profile: defined on 
+#    Sar, arithmetic mean deviation of the assessed profile: defined on
 #        the sampling length. Ra is used as a global evaluation of the roughness
 #        amplitude on a profile. It does not say anything on the spatial
 #        frequency of the irregularities or the shape of the profile.
 #        Ra is meaningful for random surface roughness (stochastic) machined
-#        with tools that do not leave marks on the surface, such as sand 
+#        with tools that do not leave marks on the surface, such as sand
 #        blasting, milling, polishing
 
         Sar = round(np.sum(np.abs(data - np.mean(data))/float(data.size))*1000,roundx)
-        
-#    Sp, maximum profile peak height: height of the highest peak from the 
+
+#    Sp, maximum profile peak height: height of the highest peak from the
 #        mean line, defined on the sampling length.
-#    
+#
         Sp = Sz - round(np.mean(data)*1000,roundx)
 
-#    St, total height of the profile: height between the deepest valley and 
+#    St, total height of the profile: height between the deepest valley and
 #        the highest peak on the evaluation length.
 
         St = Sp + Sv
 
 
-#   
+#
 #    Sq, root mean square deviation of the assessed profile: corresponds to the
 #        standard deviation of the height distribution, defined on the sampling
 #        length. Rq provides the same information as Ra.
         Sq = round(np.std(data)*1000,roundx)
-#    
-#    Ssk, skewness of the assessed profile: asymmetry of the height 
+#
+#    Ssk, skewness of the assessed profile: asymmetry of the height
 #        distribution, defined on the sampling length. This parameter is
 #        important as it gives information on the morphology of the surface
 #        texture. Positive values correspond to high peaks spread on a regular
 #        surface (distribution skewed towards bottom) while negative values are
 #        found on surfaces with pores and scratches (distribution skewed towards
 #        top). It is therefore interesting when contact or lubrication functions
-#        are required. However, this parameter does not give any information on 
+#        are required. However, this parameter does not give any information on
 #        the absolute height of the profile, contrary to Ra.
-        
+
         Ssk = round(skew(data.flatten()),roundx)
-#    
-#    Sku, kurtosis of the assessed profile: sharpness of the height 
+#
+#    Sku, kurtosis of the assessed profile: sharpness of the height
 #        distribution, defined on the sampling length.
-#    
+#
         Sku = round(kurtosis(data.flatten()),roundx)
-        
+
 #    Sa, mean height of profile elements: defined on the evaluation length.
 #        This parameter can be calculated on surfaces having texture cells or
 #        grains. It is similar to the motif parameter R found in ISO 12085 and,
-#        in that sense, it should be considered as a feature parameter 
+#        in that sense, it should be considered as a feature parameter
 #        (see ISO 25178).
-        
+
         Sa = round(np.nanmean(np.abs(data))*1000,roundx)
         #Sa_peak = round(np.mean(data[data>0])*1000,roundx)
-        
-        dicmetrology = {'Sz_microns':Sz, 'Sv_microns':Sv, 'St_microns':St, 'Sar_microns':Sar, 'Sp_microns':Sp, 'Sq_microns':Sq, 
+
+        dicmetrology = {'Sz_microns':Sz, 'Sv_microns':Sv, 'St_microns':St, 'Sar_microns':Sar, 'Sp_microns':Sp, 'Sq_microns':Sq,
                         'Ssk':Ssk, 'Sku':Sku, 'Sa_microns':Sa}
         return dicmetrology
-        
-        
+
+
 
     def takenote(self):
         from scipy.stats import skew
@@ -2923,15 +2927,15 @@ class ns:
                 skew(
                     self.array.flatten()) +
                 '\n')
-    
+
     def go(self):
         self.mfilter()
         self.subtractplane()
         self.plot()
-        
+
 #♣Exporting tools.
     def GEOTIFF(self):
-        import osgeo.gdal as gdal   
+        import osgeo.gdal as gdal
         """Array > Raster
         Save a raster from a C order array.
 
@@ -2997,7 +3001,7 @@ class ns:
         Export in .mat format.
         '''
         import scipy.io
- 
+
         self._mk_results_folder()
         if mdict == None:
             if savemask:
@@ -3022,25 +3026,25 @@ class ns:
         h5f = h5py.File(r'Results\ '+dataset + '.hdf', 'w')
         h5f.create_dataset(dataset, data=self.array)
         self.savelog()
-    
+
     def gwy_export(self,unit = "mm"):
         from gwyfile.objects import GwyContainer, GwyDataField, GwySIUnit
         obj = GwyContainer()
         obj["/0/data/title"] = self.name
-        
+
         if  hasattr(self.array,"mask"):
             if unit == 'mm':
                 data = GwyDataField(self.array.data.astype(np.float)/1000)
                 data.si_unit_z = GwySIUnit(unitstr="m")
             if unit == 'micron' or unit == 'um':
-                data = GwyDataField(self.array.data.astype(np.float)/1000)                
+                data = GwyDataField(self.array.data.astype(np.float)/1000)
                 data.si_unit_z = GwySIUnit(unitstr = "m")
             data.si_unit_xy = GwySIUnit(unitstr = "m")
             data.xres = self.array.shape[1]
             data.yres = self.array.shape[0]
             data.xreal = self.parameters.rangeX/1000
             data.yreal = self.parameters.rangeY/1000
-            
+
             obj["/0/mask"] = GwyDataField(self.array.mask.astype(np.float))
             obj["/0/data"] = data
         else:
@@ -3048,7 +3052,7 @@ class ns:
                 data = GwyDataField(self.array.astype(np.float)/1000)
                 data.si_unit_z = GwySIUnit(unitstr = "mm")
             if unit == 'micron' or unit == 'um':
-                data = GwyDataField(self.array.astype(np.float)/1000)                
+                data = GwyDataField(self.array.astype(np.float)/1000)
                 data.si_unit_z = GwySIUnit(unitstr = "m")
             data.xres = self.array.shape[1]
             data.yres = self.array.shape[0]
@@ -3080,11 +3084,11 @@ class ns:
 #        log = GwyContainer()
 #        log[]
         obj.tofile("%s.gwy" %(self.name))
-        
+
     def SPM_exportv2(self):
 
         self._mk_results_folder()
-  
+
         header = ['ISO/TC 201 SPM data transfer format\n', 'general information\n',
                   '\n', '\n', '\n', '\n',
                   'Created by an image processing software.  Bogus acquisition parameters.\n',
@@ -3275,8 +3279,8 @@ class ns:
             Z = (self.lens.LENS_MAXd + 3) - Z
         xyz = list(zip(X, Y, Z))
         number_of_vertex = len(Z)
-        return xyz, number_of_vertex       
-        
+        return xyz, number_of_vertex
+
     def ASCII_export(self, kind='ply', invertvalue=False, centroids=False):
         '''
         Method of ns class
@@ -3295,7 +3299,7 @@ class ns:
         -------
         Save a .ply file in the Result folder.
         '''
-      
+
         n = '\n'
         xyz,nv = self.pointCloud_generator(centroids=centroids,invertvalue=invertvalue)
         self._mk_results_folder()
@@ -3356,9 +3360,9 @@ class ns:
             if flipyax == -1:
                 plt.gca().invert_yaxis()
                 plt.gca().invert_xaxis()
-                
+
             plt.savefig(figfile, format='png', dpi=50)
-            
+
         except MemoryError:
             print('Size exceed memory limits,diluting data...')
             self.plot(mode=2, plot=False, unit=unit,dilution=2)
@@ -3367,7 +3371,7 @@ class ns:
                 plt.gca().invert_xaxis()
             figfile = BytesIO()
             plt.savefig(figfile, format='png', dpi=50)
-            
+
         figfile.seek(0)  # rewind to beginning of file
         img = figfile.getvalue()  # extract string (stream of bytes))
         figfile.close()
@@ -3426,7 +3430,7 @@ class ns:
                 plt.gca().invert_yaxis()
                 plt.gca().invert_xaxis()
             plt.savefig(figfile2, format='png', dpi=50)
-            
+
         except MemoryError:
             print('Size exceed memory limits,diluting data...')
             self.SNR(plot=True,dilution=2)[0]
@@ -3492,7 +3496,7 @@ class ns:
                 ROI3 = figfile6.getvalue()  # extract string (stream of bytes))
                 figfile6.close()
                 plt.close()
-        
+
         else:
             metrology = 'nm'
 
@@ -3504,7 +3508,7 @@ class ns:
         renderer = Renderer(r"C:\Users\OPdaTe\Documents\Microprofilometro - Acquisizioni\Template_new_metro%s.odt" %(metrology), locals(), '%s.odt' % (self.path))
         renderer.run()
         #restore original figsize
-        plt.rcParams['figure.figsize'] =  originalfigsize 
+        plt.rcParams['figure.figsize'] =  originalfigsize
         gc.collect()
 
     def viewer(self, absolute=False,complete=True):
@@ -3615,7 +3619,7 @@ class ns:
                     sy],
                 title="SNR",
                 interpolation='nearest')
-            
+
             plot.add_item(SNR, z=2)
             if self.missingvaluesarray is not None:
                 rowtoflip = list(range(1, self.parameters.numrows, 2))
@@ -3723,7 +3727,7 @@ class ns:
         self.log['Processing'] = self.log['Processing'].join(
             'GaussianBlur ksize:%s, sigmaX: %s' % (ksize, sigmaX))
         return filtered_surf
-    
+
     def normalize_0to255(self,astype = np.uint8):
         return (255*(self.array - np.min(self.array))/np.ptp(self.array)).astype(astype)
 
@@ -3739,20 +3743,20 @@ class ns:
             print(" 5 - Equalized False Color Composite")
             kind = eval(input('Type the number: '))
 
-        
+
         if mfilter and hasattr(self.array, 'mask'):
             filteredarr = self.array.copy()
             filteredarr[self.array.mask] = np.nan
         else:
             filteredarr = self.array
-            
+
         if margin != None:
             filteredarr=filteredarr[margin:-margin,margin:-margin]
-        
+
         h, w = filteredarr.shape
         restor = h % lato
         restoc = w % lato
-        
+
         if restoc != 0 and restor != 0:
             final = filteredarr[:-restor, :-restoc]
             print('Eliminated %i columns and %i row' % (restoc, restor))
@@ -3770,7 +3774,7 @@ class ns:
         print(numcolsa)
         numrowsa = final.shape[0] / lato
         print(numrowsa)
-        
+
         #Form here starts the segmentation
         ini = 0
         arr = []
@@ -3791,7 +3795,7 @@ class ns:
                 for k in a:
                     arr.append(np.nanstd(k))
                 ini += lato
-           
+
 
         elif kind == 2:
             if overwrite:
@@ -3862,7 +3866,7 @@ class ns:
             plt.imshow(img, interpolation='nearest')
             plt.show()
             return
-        
+
         elif kind == 6:
             if overwrite:
                 self.parameters.colorbar_label = 'Bigerelle (microns)'
@@ -3876,12 +3880,12 @@ class ns:
                     arr.append(abs(np.nanmin(k)))
                     arr2.append(np.nanmax(k))
                 ini += lato
-                
+
         elif kind == 7:
             #J. Europ. Opt. Soc. Rap. Public. 9, 14032 (2014)
             #Calculated in subareas
             #Divide area in subareas
-        
+
             square_dist = np.zeros(numrowsa*numcolsa)
             subarea_mat=[]
             for i in range(1, numrowsa + 1):
@@ -3890,20 +3894,20 @@ class ns:
                             np.column_stack(
                                 (final[ini:(lato * i),::]))),
                         numcolsa)
-                    
+
                     for sub_ar in a:
                         subarea_mat.append(sub_ar.reshape(lato,lato))
-                        
+
             x1 = random.randint(0,lato-1)
             y1 = random.randint(0,lato-1)
             x2 = random.randint(0,lato-1)
             y2 = random.randint(0,lato-1)
-            
+
             dist_vector_r = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)*self.parameters.stage_step
-            for n,ROI in enumerate(subarea_mat):            
+            for n,ROI in enumerate(subarea_mat):
                          square_dist[n] += math.sqrt(ROI[y1][x1] **2 + ROI[y1][x1] **2)
 
-        
+
         if overwrite:
             self.parameters.stage_step = self.parameters.stage_step * lato
             self.array = np.array(arr).reshape(numrowsa, numcolsa)
@@ -3921,7 +3925,7 @@ class ns:
                     print('Normalizing...')
                     self.array = (self.array-minval)/(np.nanmax(self.array)-minval)
                     self.log['Processing'] = self.log['Processing'].join(' norm to 1')
-            
+
         else:
             if arr2 == []:
                 return np.array(arr).reshape(numrowsa, numcolsa)
@@ -3937,16 +3941,16 @@ class ns:
                            ):
         '''
         1 - Std. Deviation Roughness
-        
-        2 - Skewness 
-        
+
+        2 - Skewness
+
         3 - Kurtosis
-        
+
         6 - This is a 2D implementation of the 1D algorithm proposed in:
         The multi-scale roughness analyses and modeling of abrasion with the grit
-        size effect on ground surfaces. 
+        size effect on ground surfaces.
         Wear 286-287 (2012) 124-135
-        
+
         Maxence Bigerelle et al.
         '''
         multiseg = {}
@@ -3955,7 +3959,7 @@ class ns:
             multiseg[round(1*self.parameters.stage_step*1000,1)] = [self.array,self.array]
         else:
             #add the array itself
-            multiseg[round(1*self.parameters.stage_step*1000,1)] =  [self.array]     
+            multiseg[round(1*self.parameters.stage_step*1000,1)] =  [self.array]
         if  step == 'factors':
             steps = [i for i in range(2,maxside) if maxside%i == 0]
         else:
@@ -3963,22 +3967,22 @@ class ns:
         for t in steps:
             scale = round(t*self.parameters.stage_step*1000,1)
             multiseg[scale] = self.Segmentation(kind=kind,lato=t, norm = norm)
-          
-        
+
+
         if plot:
-            indices = np.array(sorted(multiseg.keys())) 
+            indices = np.array(sorted(multiseg.keys()))
             if kind == 6:
                 fig = plt.figure()
-                ax = fig.add_subplot(221)      
+                ax = fig.add_subplot(221)
                 yminh = multiseg[indices[3]][0].flatten()*1000
                 ymaxh = multiseg[indices[3]][1].flatten()*1000
                 data = np.vstack([yminh, ymaxh]).T
                 bins = np.linspace(0, np.nanmax(data), 30)
                 ax.hist(data, bins, alpha=0.7, label=['-Ymin', 'Ymax'])
                 ax.set_xlabel('Roughness amplitude (micron)')
-                ax.set_title('Empirical distributions \n for evaluation \n lenght of %s micron'%(indices[3])) 
+                ax.set_title('Empirical distributions \n for evaluation \n lenght of %s micron'%(indices[3]))
                 ax.legend()
-                
+
                 ax = fig.add_subplot(222)
                 indices = np.array(sorted(multiseg.keys()))
                 yminh = multiseg[indices[5]][0].flatten()*1000
@@ -3987,9 +3991,9 @@ class ns:
                 bins = np.linspace(0, np.nanmax(data), 30)
                 ax.hist(data, bins, alpha=0.7, label=['-Ymin', 'Ymax'])
                 ax.set_xlabel('Roughness amplitude (micron)')
-                ax.set_title('Empirical distributions \n for evaluation \n lenght of %s micron'%(indices[5])) 
+                ax.set_title('Empirical distributions \n for evaluation \n lenght of %s micron'%(indices[5]))
                 ax.legend()
-                
+
                 ax = fig.add_subplot(223)
                 indices = np.array(sorted(multiseg.keys()))
                 yminh = multiseg[indices[10]][0].flatten()*1000
@@ -3998,9 +4002,9 @@ class ns:
                 bins = np.linspace(0, np.nanmax(data), 30)
                 ax.hist(data, bins, alpha=0.7, label=['-Ymin', 'Ymax'])
                 ax.set_xlabel('Roughness amplitude (micron)')
-                ax.set_title('Empirical distributions \n for evaluation \n lenght of %s micron'%(indices[10])) 
+                ax.set_title('Empirical distributions \n for evaluation \n lenght of %s micron'%(indices[10]))
                 ax.legend()
-                
+
                 ax = fig.add_subplot(224)
                 indices = np.array(sorted(multiseg.keys()))
                 yminh = multiseg[indices[15]][0].flatten()*1000
@@ -4009,11 +4013,11 @@ class ns:
                 bins = np.linspace(0, np.nanmax(data), 30)
                 ax.hist(data, bins, alpha=0.7, label=['-Ymin', 'Ymax'])
                 ax.set_xlabel('Roughness amplitude (micron)')
-                ax.set_title('Empirical distributions \n for evaluation \n lenght of %s micron'%(indices[15])) 
+                ax.set_title('Empirical distributions \n for evaluation \n lenght of %s micron'%(indices[15]))
                 ax.legend()
                 plt.tight_layout()
-                
-                
+
+
                 fig2 = plt.figure()
                 ax2 = fig2.add_subplot(311)
                 indices = np.array(sorted(multiseg.keys()))
@@ -4031,11 +4035,11 @@ class ns:
                 ax4.set_ylabel('maximal \n range \n roughness\n amplitude  (micron)')
                 ax4.plot(indices,np.array(ymax)+np.array(ymin),'x',color='r',label='Ymax')
                 plt.tight_layout()
-                
-  
-                
+
+
+
         return multiseg
-        
+
     def SLIC(
             self,
             minz=None,
@@ -4107,9 +4111,9 @@ class ns:
         self.log['Processing'] = self.log['Processing'].join(
             'SLIC minz=%s,maxz=%s,n_segments=%s, compactness=%s, enforce_connectivity=%s' %
             (minz, maxz, n_segments, compactness, enforce_connectivity))
-        
+
         calccraksANS = input('Do you want to calulate craks? y/n ')
-       
+
         if calccraksANS.lower() == 'y':
             for i in np.unique(segments_slic):
                 segment = np.ma.masked_where(segments_slic != i, self.array)
@@ -4122,12 +4126,12 @@ class ns:
             (minz, maxz, n_segments, compactness, enforce_connectivity))
         return self.array
 
-#Utilities 
+#Utilities
 
     def _mk_results_folder(self):
          if not path.exists('Results'):
             makedirs('Results')
-            
+
     def _save_plot(self,fig,name):
         self._mk_results_folder()
         dpi = 300
@@ -4138,4 +4142,3 @@ class ns:
             except:
                 dpi /= 2
         plt.close(fig)
-
