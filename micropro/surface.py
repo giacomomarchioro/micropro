@@ -1130,8 +1130,6 @@ class ns:
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        if cm == None:
-            cmap = jet# Greys
         if cm == 'dist':
             minl = self.lens.LENS_MINd
             maxl =self.lens.LENS_MAXd
