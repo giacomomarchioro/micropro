@@ -1145,8 +1145,9 @@ class ns:
             cmap.set_under(color='w')
             vminx = minl
             vmaxx = maxl
-        cm_class_str = "<class 'matplotlib.colors.LinearSegmentedColormap'>"
-        if str(type(cm)) == cm_class_str :
+        cm_class_str = ["<class 'matplotlib.colors.LinearSegmentedColormap'>",
+                        "<class 'matplotlib.colors.ListedColormap'>"]
+        if str(type(cm)) in cm_class_str :
             cmap = cm
         else:
             cmap = plt.cm.viridis
