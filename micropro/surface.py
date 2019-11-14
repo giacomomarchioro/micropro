@@ -1148,7 +1148,8 @@ class ns:
         cm_class_str = "<class 'matplotlib.colors.LinearSegmentedColormap'>"
         if str(type(cm)) == cm_class_str :
             cmap = cm
-
+        else:
+            cmap = plt.cm.viridis
         cmap.set_bad('w', 1.)  # set bad values
         if data == '':
             data = self.array
