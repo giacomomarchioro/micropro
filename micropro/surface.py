@@ -443,9 +443,9 @@ class ns:
                 for i, j in zip(b1, self.missingvaluesarray):
                     leng = np.count_nonzero(j)
                     indexes = np.nonzero(j)
-                    todelete = indexes[0][-leng / 2:]
+                    todelete = indexes[0][int(round(-leng / 2)):]
                     corr = np.delete(i, todelete)
-                    toinsert = indexes[0][:-leng / 2]
+                    toinsert = indexes[0][:int(round(-leng / 2))]
                     for d in toinsert:
                         corr = np.insert(corr, d, replacewith)
 
@@ -981,10 +981,10 @@ class ns:
                 # get the indices of the missing values
                 indexes = np.nonzero(j)
                 # get the indices of last n/2 values
-                todelete = indexes[0][-leng / 2:]
+                todelete = indexes[0][int(round(-leng / 2)):]
                 corr = np.delete(i, todelete)  # delete the last elements
                 # get the indices where to insert
-                toinsert = indexes[0][:-leng / 2]
+                toinsert = indexes[0][:int(round(-leng / 2))]
                 # the missin values
                 for d in toinsert:
                     corr = np.insert(
@@ -3304,7 +3304,7 @@ class ns:
         xyz,nv = self.pointCloud_generator(centroids=centroids,invertvalue=invertvalue)
         self._mk_results_folder()
         if kind == 'ply':
-            with open(r'Results\ ' + self.name + '.ply', 'w') as o:
+            with open(path.join(r'Results',self.name + '.ply'), 'w') as o:
                 o.write('ply' + n)
                 o.write('format ascii 1.0' + n)
                 o.write('element vertex %s ' % (nv) + n)
@@ -3325,7 +3325,7 @@ class ns:
                     o.write('%s\t%s\t%s' % (i[0], i[1], i[2]) + n)
 
         if kind == 'xyz':
-            with open(r'Results\ ' + self.name + '.XYZ', 'w') as o:
+            with open(path.join(r'Results',self.name + '.XYZ'), 'w') as o:
                 o.write('# Channel: Gray' + n)
                 o.write('# Lateral units: m' + n)
                 o.write('# Value units: m' + n)
