@@ -1849,7 +1849,7 @@ class ns:
                 # avoid computation over masked values
                 x = X[~array.mask].flatten()
                 y = Y[~array.mask].flatten()
-                z = self.array[~array.mask].flatten()
+                z = self.array[~array.mask].data.flatten()
 
             else:
                 x = X.flatten()
