@@ -4130,7 +4130,7 @@ class ns:
 
     def _mk_results_folder(self):
          if not path.exists('Results'):
-            makedirs(path.join(getcwd(),'Results')
+            makedirs(path.join(getcwd(),'Results'))
 
     def _save_plot(self,fig,name):
         self._mk_results_folder()
