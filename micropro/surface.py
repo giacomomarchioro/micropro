@@ -3304,7 +3304,7 @@ class ns:
         xyz,nv = self.pointCloud_generator(centroids=centroids,invertvalue=invertvalue)
         self._mk_results_folder()
         if kind == 'ply':
-            with open(path.join(r'Results',self.name + '.ply'), 'w') as o:
+            with open(path.join(getcwd(),r'Results',self.name + '.ply'), 'w') as o:
                 o.write('ply' + n)
                 o.write('format ascii 1.0' + n)
                 o.write('element vertex %s ' % (nv) + n)
@@ -3325,7 +3325,7 @@ class ns:
                     o.write('%s\t%s\t%s' % (i[0], i[1], i[2]) + n)
 
         if kind == 'xyz':
-            with open(path.join(r'Results',self.name + '.XYZ'), 'w') as o:
+            with open(path.join(getcwd(),r'Results',self.name + '.XYZ'), 'w') as o:
                 o.write('# Channel: Gray' + n)
                 o.write('# Lateral units: m' + n)
                 o.write('# Value units: m' + n)
