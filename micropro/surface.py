@@ -4129,7 +4129,6 @@ class ns:
 #Utilities
 
     def _mk_results_folder(self):
-         os.getcwd
          if not path.exists('Results'):
             makedirs(path.join(getcwd(),'Results')
 
