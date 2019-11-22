@@ -4129,15 +4129,16 @@ class ns:
 #Utilities
 
     def _mk_results_folder(self):
+         os.getcwd
          if not path.exists('Results'):
-            makedirs('Results')
+            makedirs(path.join(getcwd(),'Results')
 
     def _save_plot(self,fig,name):
         self._mk_results_folder()
         dpi = 300
         while True:
             try:
-                fig.savefig(r'Results\ '+name, dpi = dpi)
+                fig.savefig(path.join(Results',name), dpi = dpi)
                 break
             except:
                 dpi /= 2
