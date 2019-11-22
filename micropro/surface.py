@@ -4137,7 +4137,7 @@ class ns:
         dpi = 300
         while True:
             try:
-                fig.savefig(path.join(Results',name), dpi = dpi)
+                fig.savefig(path.join('Results',name), dpi = dpi)
                 break
             except:
                 dpi /= 2
