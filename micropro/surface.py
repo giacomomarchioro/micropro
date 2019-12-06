@@ -367,6 +367,8 @@ class ns:
         self.parameters.colorbar_label = '($mm$) Repeatability=%s $\mu m$' % (
             self.lens.Repeatability)
 
+        if self.parameters.laserpower < 10:
+            print("LASER POWER LOW, WAVELENGHT MIGHT BE UNSTABLE!")
         if self.parameters.numrows * self.parameters.numcols != arr.size:
             print("WARNING! SIZES DO NOT MATCH!")
             diff = self.parameters.numrows * self.parameters.numcols - arr.size
