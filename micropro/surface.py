@@ -106,12 +106,24 @@ class ns:
 #        newsurface.array=self.array-other.array
 #        return newsurface
     def acoustic_init(self,path=True):
+        """Loading acuostic microscopy data in mat file.    
+        
+        Parameters
+        ----------
+        path : bool, optional
+            Add the current working directory to the file., by default True
+        
+        Returns
+        -------
+        str
+            Last string of the header
+        """
         import scipy.io  as scio
         self.array = scio.loadmat(self.name)['data']
         base = self.name.split('_TOF.mat')[0].replace('-','_')
         self.array = np.ma.masked_invalid(self.array)
         if path:
-            base = getcwd() + '\\' +base
+            base = path.join(getcwd(),base)
 
         with open(base + '.acs_Info.txt') as f:
             for i in f:
@@ -128,20 +140,17 @@ class ns:
         self.parameters.numrows = float(self.header['Rows'].split()[0])
         self.parameters.stage_step = float(self.header['Scanning Step x'].split()[0])
         self.parameters.offset = 0
-
-
-
         return g
 
     def inizialize(self):
-        '''
+        """
         This is a inzizlizing fucntion design to retrieve data form the header
         file of the microprofilometer. It returns all the parameters useful to
         perform further analysis of the data.
         A 2D array of raw data, unflipped and unmasked is formed at the end
         of the process and stored in self.array. This will be the base for
         further processing.
-        '''
+        """
         self.path = self.path.replace(
             '.', '')  # remove any superfuls full stop
         self.name = self.path.split('\\')[-1]
@@ -410,26 +419,40 @@ class ns:
             cartesian=True, absolute=False, replacewith=0,dilution=False,
             QC=False,cmap='d',title=True, orientation = 'auto'
             ):
-        '''
-        This function retrive data from the .snr file where the
-        signal to noise ratio for every measurement is stored.
-        It allows to the quality of the measurement.
+            """Compute the average Total value and allows displaying the Total matrix.
+            
+            Parameters
+            ----------
+            matrix : bool, optional
+                reconstruct the total matrix otherwise it will compute the mean value, by default False
+            plot : str, optional
+                show the recoonstructed Total matrix return a plot to show the data
+             use the argument plot='show' or plt.show(), by default 'show'
+            cartesian : bool, optional
+                show the matrix using cartesian coordinate system 0,0 botttom left corner, by default True
+            absolute : bool, optional
+                use the absolute reference system of the stages, by default False
+            replacewith : int, optional
+                the value to be used instead of the missing values, by default 0
+            dilution : bool, optional
+                for saving memory the plot can be the result of a sampling, by default False
+            QC : bool, optional
+                perform the quality control, by default False
+            cmap : str, optional
+                the colormap to be used 'd' for showing discreate values 'c' for continuous, by default 'd'
+            title : bool, optional
+                the title to be displayed, by default True
+            orientation : str, optional
+                the orientation of the colorbar, by default 'auto'
+            
+            Returns
+            ----------
 
-        ------------------
-         Keyword arguments:
-             matrix --compute the matrix (default False)
-             plot -- return a plot of the data (default 'show') to show the data
-             use the argument plot='show' or plt.show()
+            figs : matplotlib figures
+                the created plot figures if plot is true
+            b : the total matrix
 
-
-        -----------------
-        Returns:
-            plt -- plot object
-            b -- 2d array where data is reshaped and flipped if matrix = True
-            otherwise return None
-
-        '''
-
+            """
         a = np.fromfile(self.path + '.total', dtype=np.uint16)
         b = 'None'
         figs = None
@@ -584,25 +607,34 @@ class ns:
             cartesian=True, absolute=False, replacewith=0,dilution=False,
             display='percentage',QC = False,cmap = 'c',title=True,
             orientation = 'auto' ):
-        '''
-        This function retrive data from the .snr file where the
-        signal to noise ratio for every measurement is stored.
-        It allows to the quality of the measurement.
+            """Compute the average SNR value and allows displying the SNR matrix.
+            
+            Parameters
+            ----------
+            matrix : bool, optional
+                if true reconstruct the SNR matrix, by default False
+            plot : str, optional
+                plot the reconstructed matrix, by default 'show'
+            cartesian : bool, optional
+                show the matrix using cartesian coordinate system 0,0 botttom left corner, by default True
+            absolute : bool, optional
+                use the absolute reference system of the stages, by default False
+            replacewith : int, optional
+                the value to be used instead of the missing values, by default 0
+            dilution : bool, optional
+                for saving memory the plot can be the result of a sampling, by default False
+            display : str, optional
+                shows the results as a percentage or as counts otherwise, by default 'percentage'
+            QC : bool, optional
+                perform the quality control, by default False
+            cmap : str, optional
+                the colormap to be used 'd' for showing discreate values 'c' for continuous, by default 'd'
+            title : bool, optional
+                the title to be displayed, by default True
+            orientation : str, optional
+                the orientation of the colorbar, by default 'auto'
 
-        ------------------
-         Keyword arguments:
-             matrix --compute the matrix (default False)
-             plot -- return a plot of the data (default 'show') to show the data
-             use the argument plot='show' or plt.show()
-
-
-        -----------------
-        Returns:
-            plt -- plot object
-            b -- 2d array where data is reshaped and flipped if matrix = True
-            otherwise return None
-
-        '''
+            """
 
         a = np.fromfile(self.path + '.snr', dtype=np.uint16)
         b = 'None'
@@ -770,27 +802,19 @@ class ns:
 
 
     def diagnose(self, b, numcols, numrows, v=False):
-        '''
-        Method of ns class.
-        This function is used from other methods to diagnose errors.
-        It perfroms a series of test over the data.
-
+        """Diagnose the reconstructed array.
+        
         Parameters
         ----------
         b : np.array
-                 matrix
+            The np.array reconstructed
         numcols : int
-                 number of columns caclulated
+            The expected number of columns
         numrows : int
-                 number of rows calculated
-        v : Boole
-                 activate verbose mode (default is False)
-
-        Returns
-        -------
-        Prints output result to the console.
-
-        '''
+            The expected number of rows
+        v : bool, optional
+            If true a verbose diagnosis is used, by default False
+        """
         # ERRORS CHEKERS:
         print('Retrieved rows:', b.shape[0], ' cols:', b.shape[1])
         if b.shape[1] != numcols or b.shape[0] != numrows:
@@ -815,6 +839,16 @@ class ns:
             print('SHAPE:', b.shape)
 
     def checkID(self):
+        """Check if the ID used is the right one, confronting the photos in the database.
+        
+        This function is part of the quality control. It requires the user to compare the data in the 
+        database with the data collected.
+
+        Returns
+        -------
+        bole
+            True if there is an ID in the database (not necessarly the right one.)
+        """
         plt.ioff()
         if self.sample_infos != None:
                 img = self.sample_infos.get_image()
@@ -856,6 +890,17 @@ class ns:
             return False
 
     def QualityControl(self,user = 'GM'):
+        """Perform a quality control on the measurment.
+        
+        This function allows to perform the quality control of the data collected. The user is asked to evaluate
+        different parameters that are indicators of the quality of the scan.
+        The results are stored in the self.logQC and in a separate file saved to disk QC-Passed.txt or QC-Failed.txt.
+
+        Parameters
+        ----------
+        user : str, optional
+            The name of the user who performed the quality control, by default 'GM'
+        """
         folderpath = self.path[:-len(self.name)]
         from os import path
 
@@ -901,7 +946,9 @@ class ns:
             self.logQC['user'] = user
             self.logQC['result'] = status
 
-    def _get_QualityControl(self,user = 'GM'):
+    def _get_QualityControl(self):
+        """Get the results of the quality control.
+        """
         folderpath = self.path[:-len(self.name)]
         if folderpath == '':
             folderpath = getcwd()
@@ -914,8 +961,9 @@ class ns:
             self.logQC['result'] = 'Passed'
 
 
-    def checkmissing(self, replacewith=np.nan, repair=True, snr=False, sr=0):
-        '''
+    def checkmissing(self, replacewith=np.nan, repair=True, snr=False):
+        """Check if any valus is missing.
+        
         This is an important function that should be run every time you process
         data from microprofilometer.
         The .tag file is a series of number going form 1 to 255 then starting
@@ -929,21 +977,20 @@ class ns:
         This function check if any missing value is present and if any are present
         and repair argument is set to True add a value (default is np.nan) for
         every missing measurment in the right position, and delate the last value.
+        
+        Parameters
+        ----------
+        replacewith : values, optional
+            The object to be used instead of the missing value, by default np.nan
+        repair : bool, optional
+            if Ture the matrix is corrected, by default True
+        snr : bool, optional
+            if Ture a corrected SNR matrix is saved as .npy array, by default False
 
-
-        ------------------
-         Keyword arguments:
-             replacewith -- replace missing value with (default is np.nan)
-             repair -- add missing value (default is True)
-             sr -- Supplementary row have to be used in case
-             snr -- save a corrected SNR matrix as CorrectSNR.npy matrix
-
-        -----------------
-        Returns:
-            It wirte the self.missingvaluesarray parameter.
-
-        '''
-
+        Returns
+        -------
+        It wirte the self.missingvaluesarray parameter.
+        """
         if not path.exists(self.path + '.tag'):
             print('File TAG do not exist')
             self.log['Missing Value correction'] = 'Not performed, no TAG file.'
@@ -1024,6 +1071,18 @@ class ns:
             self.missingvaluesarray = missingvalue
 
     def interpolate_missing(self,method='cubic'):
+        """Interpolate the missing values with different methods.
+        
+        This method uses scipy interpolate, for computing the value where invalid values have been
+        detected. Any masked values is replaced with the computed one self.mfilter() must be carried out
+        before using this method. self.checkmissing() must be used before self.mfilter() for correcting
+        any missing values.
+
+        Parameters
+        ----------
+        method : str, optional
+            The method used for interpolating the missing value, by default 'cubic'
+        """
         from scipy import interpolate
         import gc
         x = np.arange(0, self.array.shape[1])
@@ -1037,12 +1096,15 @@ class ns:
                                   self.array[~self.array.mask].ravel(),
                                   (xx, yy),
                                    method=method)
+    
     def savelog(self):
+        """It saves the log in a .txt files.
+        """
 
         self._mk_results_folder()
 
 
-        with open(r'Results\postprocessing_log.txt', 'w') as f:
+        with open(path.join("Results","postprocessing_log.txt"), 'w') as f:
             f.write('file name: %s \n' % (self.path))
             f.write(
                 'Added row to calculated from header: %s \n' %
@@ -1061,7 +1123,8 @@ class ns:
              mode=False, plot=True, rectangle=[],save=False,cartesian=True,
             dilution=False, title = True, cm = None, QC = False ,
             orientation = 'auto',show_ROIs=False):
-        '''
+        """plot the array of distances as color coded map.
+        
         This is the main function to plot the results. It handle most of the
         expeption and try to plot all the information about Lens and other
         parameters. So it will automatically see if a lens is present to retrive
@@ -1075,21 +1138,47 @@ class ns:
 
         Press 'c' twice to capture the coordinates of the current selection.
 
-        ------------------
-         Keyword arguments:
-             vminx -- the lower colorbar limit (default is None)
-             vmaxx -- the upper colorbar limit (default is None)
-             unit --  the unit of the colorbar (default is 'mm')
-             data -- A 2d matrix can be passed to be plotted (default is '')
-             absolute -- if you need to use the coordinate system of the micor
-             profilometer stages you can pass True to this argument, this argument
-             is handy when you have done a scan of a full sample and you want to
-             select a ROI to be analyzed with a higher resoltuion (default is False)
-             auto -- If seted to True set the colorbar to min-max (default is False)
-
-
-
-        '''
+        Parameters
+        ----------
+        vminx : float, optional
+            the minimum value of the colorbar if None auto ranging is performed, by default None
+        vmaxx : float, optional
+            the maximum value of the colorbar if None auto ranging is performed by default None
+        unit : str, optional
+            the unit of the colorbar bar ('microns' or 'mm'), by default 'mm'
+        data : np.array, optional
+            the data to be plotted if '' the self.array is plotted, by default ''
+        absolute : bool, optional
+            if true the scanning reference system is used, by default False
+        mode : bool, optional
+            mode allows to strech the colorbar to one two or three sigmas (1,2,3) or to 'min-max', by default False
+        plot : bool, optional
+            when true the plot is distplayed, by default True
+        rectangle : list, optional
+            a list of vertices that can be used for overlaying rectangles (e.g. ROIs invistigated), by default []
+        save : bool, optional
+            if true save the resulting plot in the Results folder, by default False
+        cartesian : bool, optional
+            uses cartesian reference system (origin bottom left), by default True
+        dilution : int, optional
+            plot sampled values diluting the measurment by a factor, by default False
+        title : str, optional
+            the title of the plot, by default True
+        cm : matplotlib.colormap, optional
+            the color to be used in the plot if None the default colormap is used, by default None
+        QC : bool, optional
+            if True the setting for performing the quality control are used, by default False
+        orientation : str, optional
+            the oriantation of the colorbar ('vertical','horizontal') when auto the best oriantationis chosen
+            depending on the aspect ratio, by default 'auto'
+        show_ROIs : bool, optional
+            shows the ROIs found as a set of rectangles., by default False
+        
+        Returns
+        -------
+        matplotlib.plt
+            returns the matplotlib plot object
+        """
         def getax():
             x = plt.get(ax, 'xlim')
             y = plt.get(ax, 'ylim')
@@ -1354,12 +1443,36 @@ class ns:
         else:
             return plt
 
-    def profile_plot(self, col=None,row=None, start =None, stop =None,vminx=None,
-                     vmaxx=None, unit='mm', absolute=False,mode=False,
+    def profile_plot(self, col=None,row=None, start =None, stop =None, unit='mm', absolute=False,mode=False,
                      plot=True,save=False, title = True):
-        '''
-        plot profile
-        '''
+        """plot a single profile form the distances array.
+        
+        Parameters
+        ----------
+        col : int, optional
+            The coloumn to be ploted (if None a row must be selected), by default None
+        row : int, optional
+            The row to be plotted (if None a column must be selected), by default None
+        start : int, optional
+            The intial index of the column/row if None the start is the first index, by default None
+        stop : int, optional
+            The final index of the column/row if None the end is the last index, by default None
+        unit : str, optional
+            the unit of the colorbar bar ('microns' or 'mm'), by default 'mm'
+        absolute : bool, optional
+            if true the scanning reference system is used, by default False
+        plot : bool, optional
+            when true the plot is distplayed, by default True
+        save : bool, optional
+            if true save the resulting plot in the Results folder, by default False
+        title : str, optional
+            the title of the plot, by default True
+
+        Returns
+        -------
+        matplotlib.plt  
+            the matplotlib plot object
+        """
         if col != None and row == None:
             data = self.array[:,col][start:stop]
         elif row !=None and col == None:
@@ -1379,17 +1492,7 @@ class ns:
 
         if self.log[
                 'Best plane correction'] != 'Not performed' and vmaxx is None and vminx is None:
-            mode = 2
-        #This stretch colorbar values to min-max
-        if mode == 'min-max':
-            vminx = data.min()
-            vmaxx = data.max()
-        #You can also stre
-        if mode == 1 or mode == 2 or mode == 3:
-            stdar, meanar = np.std(data), np.mean(data)
-            vminx = meanar - mode * stdar
-            vmaxx = meanar + mode * stdar
-
+  
         fig = plt.figure()
         ax = fig.add_subplot(111)
 
@@ -1441,6 +1544,32 @@ class ns:
     def tredplotmayavi(self, array='array', show=True,outline=True,
                        axes=True,colorbar=True,unit='mm',
                        cbarorientation='vertical'):
+        """3D plot of the distances array with enached distances z (not in scale).
+        
+        This function uses myavi library for producing a 3D plot of the distances array.
+
+        Parameters
+        ----------
+        array : np.array, optional
+            The array to be plotted using 'array' it plots self.array, by default 'array'
+        show : bool, optional
+            if True the plot is shown, by default True
+        outline : bool, optional
+            if True the outline of the plot is displyed, by default True
+        axes : bool, optional
+            if True the axes of the plot are shown, by default True
+        colorbar : bool, optional
+            if Ture the colorbar is shown, by default True
+        unit : str, optional
+            the unit of the colobar ('mm' or 'microns'), by default 'mm'
+        cbarorientation : str, optional
+            The orientation of the colorbar ('vertical' or 'horizontal'), by default 'vertical'
+        
+        Returns
+        -------
+        mlab
+            mayavi mlab object
+        """
         if array is 'array':
             array = self.array
 
@@ -1469,6 +1598,39 @@ class ns:
     def tredplotmayavimesh(self, array='array', show=True,outline=True,
                            axes=True,colorbar=True,unit='mm',
                            cbarorientation='vertical', scalars = 'array',save=False):
+        """3D plot of the distances array mantaining the proportions of the axes.
+
+        This function uses myavi library for producing a 3D plot of the distances array.
+        In this case the proportion of the three axes is mantained.
+
+        Parameters
+        ----------
+        array : np.array, optional
+            The array to be plotted using 'array' it plots self.array, by default 'array'
+        show : bool, optional
+            if True the plot is shown, by default True
+        outline : bool, optional
+            if True the outline of the plot is displyed, by default True
+        axes : bool, optional
+            if True the axes of the plot are shown, by default True
+        colorbar : bool, optional
+            if Ture the colorbar is shown, by default True
+        unit : str, optional
+            the unit of the colobar ('mm' or 'microns'), by default 'mm'
+        cbarorientation : str, optional
+            The orientation of the colorbar ('vertical' or 'horizontal'), by default 'vertical'
+        scalars : np.array, optional
+            another array with the same dimension that can be used for assigning a new color coding
+            to the mesh.
+        save : bool, optional
+            if True the resultin plot is saved to disk.
+        
+        Returns
+        -------
+        mlab
+            mayavi mlab object
+        
+        """
         if array == 'array':
             array = np.fliplr(self.array.copy())
 
@@ -1521,6 +1683,31 @@ class ns:
 
     def tredplot(self, arr=None, stride='auto', plot=True,
                  title='3D Plot',zprop=True,cm ='cw'):
+        """3D plot of the distance array using matplotlib.
+        
+        This function uses matplotlib for producing a 3D plot of the distnaces array.
+        Matplotlib is slower compared to Mayavi hence is preferable to use self.tredplotmayavimesh.
+
+        Parameters
+        ----------
+        arr : np.array, optional
+            if None self.array is used, by default None
+        stride : str, optional
+            the strides determine the sampling of the original array strides to 1 corresponds to use all the data, by default 'auto'
+        plot : bool, optional
+            if Ture the result is shown, by default True
+        title : str, optional
+            the title of the plot, by default '3D Plot'
+        zprop : bool, optional
+            proportion of the z axis if True the aspect ratio of the axes is preserved, by default True
+        cm : str, optional
+            The colormar used for the colorbar, by default 'cw'
+        
+        Returns
+        -------
+        matploltlib.plt
+            matplotlib.plt object
+        """
         from matplotlib import cm
         from mpl_toolkits.mplot3d import Axes3D
         fig = plt.figure()
@@ -1628,6 +1815,7 @@ class ns:
         self.log['removed col'] = col2remove
 
     def fliprows(self, snr='.dist', v=False):
+        # TODO Update this function with the results of the thesis
         '''
         It takes the name of the output file form the profilometer. It returns
         an array with the data rearranged.
@@ -1651,6 +1839,46 @@ class ns:
                      method = "cv2.TM_CCORR_NORMED",
                      plot = True
                      ):
+        """Detect the corners of a rectangular sample 
+        
+        This method uses OpenCV template matching algorithms for finding the corners of the samples. 
+        The coordinates of the corners are stored in self.corners.
+        For performing the template matching the mask array is used by default, the user must acquire the sample
+        so that the background will be filtered by the self.mfilter function.
+        For templates are created representing the corners of the sample. 
+        Before using the template matching algorithm a morphological open and closed is performed for improving the results 
+        of the matching. 
+        For improving the performance, the original surface can be devide in four region, each region 
+        containing a corner so that the template matching can be performed only on the region where the 
+        corner should be found. In this case the sample must be centered at least approximately.
+
+        Parameters
+        ----------
+        data : np.array, optional
+            the array to be used for performing the corner detection by default is used the mask of the 
+            measurment that shows good corners if the sample is in range and the background is out of range, by default 'mask'
+        w : int, optional
+            width of the templated to be used for corner detection, by default 100
+        h : int, optional
+            height of the template to be used for corner detection, by default 100
+        Kernel_1 : tuple, optional
+            dimension of the kernel for performing a preprocessing of the data, by default (15,15)
+        Kernel_2 : tuple, optional
+            dimension of the kernerl for the second filter for performina preprocessin of the data, by default (200,200)
+        pad_width : int, optional
+            the dimension of the pixels added to the scan for allowing the identification of corners very close to the borders, by default 100
+        subdivide : bool, optional
+            if Ture the sample is subdivided so that the template is computed only on one part of the sample, by default True
+        method : str, optional
+            The method used for computing the score of the matching of the template, by default "cv2.TM_CCORR_NORMED"
+        plot : bool, optional
+            if Ture a plot of the results is shown at the end, by default True
+        
+        Raises
+        ------
+        Warning
+            Template widht and height should be even.
+        """
         import cv2
         #Template
         if data == 'mask':
@@ -1672,7 +1900,7 @@ class ns:
 
         templates = {"TR":t_TR, "TL":t_TL,"BR": t_BR,"BL": t_BL}
 
-        #Image preprocessing
+        # Image preprocessing
         kernel = np.ones((Kernel_1[0],Kernel_1[1]),np.uint8)
         imgo = imgo.astype(np.float32)
         opening3 = cv2.morphologyEx(imgo, cv2.MORPH_OPEN, kernel)
@@ -1686,8 +1914,8 @@ class ns:
             hz, wz = img.shape
             hp = 0 #this are the subdivision pad
             wp = 0
-            #we subdivide the surface in 4 areas and we search for the template
-            #only in the are wher it should be
+            # we subdivide the surface in 4 areas and we search for the template
+            # only in the are wher it should be
             if subdivide:
                 if j == 'TL':
                     img = img[:hz/2,:wz/2]
@@ -1719,7 +1947,7 @@ class ns:
             corners.append(corner)
 
 
-        #PLOTTING
+        # PLOTTING
         if plot:
             import gc
             fig = plt.figure()
@@ -1771,14 +1999,18 @@ class ns:
 
 
     def centroid_cor(self):
-        '''
-        This function realling the centroids and create a new matrix. The probe
-        acquire signal while is running. The real center of the area that has
-        been analyzed by the laser is hance shifted toward the scanning direction
+        '''Correction of the centroids
+        This function re-align the centroids and create a new matrix.
+        When the probe is acquiring in dynamic mode  it acquires signal 
+        while is running. If a snake pattern is used mantaining the same  starting 
+        and ending point for each row or column the real center of the area that has
+        been analyzed by the laser is  shifted toward the scanning direction
         of a distance that we call integration distance (see fig. a.).
         This function correct this shift using spline, creating a matrix
         Xc (cfr. fig. a) interpolating the value from the array for every line
         and recopmputing the values for an allingn matrix (cfr. fig. b).
+
+        In many systems this shifting is corrected during the acquistion.
 
         a) x x x x x x     b) x x x x x
           x x x x x x         x x x x x
@@ -1838,40 +2070,43 @@ class ns:
             QC=False,
             returncalculated_plane= False
             ):
-             """
-         tsadf
-
-         Parameters
-         ----------
-         Method of asdf  class
-         plot : bool
-             asdf aovea (default False)
-         inverted : bool
-             asdf  (default True)
-         eliminate_mask : bool
-             vasdf  (default False)
-         dil : int
-             asdfasd  (default 10)
-         array :  np.array
-             asdfasdf (default None)
-         order : int
-             fasdasdf (default 1)
-         zprop : bool
-             afsdf (default False)
-         refplane : bool
-             asdfas (default True)
-         QC : bool
-             asdfas (default False)
-         returncalculated_plane : bool
-             asdfas (default False)
-
-         Returns
-         -------
-         asdfa
+        """Subtract a plane from the array of distances.
+        
 
         See https://gist.github.com/amroamroamro/1db8d69b4b65e8bc66a6
         for further documentation.
+
+        Parameters
+        ----------
+        plot : bool, optional
+            if Ture the plane subtracted is plotted, by default False
+        inverted : bool, optional
+            if True the resulting array is inverted (peaks are positive values), by default True
+        eliminate_mask : bool, optional
+            if True the mask of the original array is deleted, by default False
+        dil : int, optional
+            the plane plotted is diluted by the factor dil allowing a faster rendering (this does not affect
+            ) the computation, by default 10
+        array : np.array, optional
+            the data to be used for performing the plane subtraction if None self.array is used, by default None
+        order : int, optional
+            the order of the polynomial fit if 1 a plane is fitted if 2 a surface , by default 1
+        zprop : bool, optional
+            allows to keep the right aspect ratio on the plot, by default False
+        refplane : bool, optional
+            if True the reference plane is calculated, by default True
+        QC : bool, optional
+            if True the function is used for assesing the quality of the measurment, by default False
+        returncalculated_plane : bool, optional
+            if True the calculated plane is returned, by default False
+        
+        Returns
+        -------
+        np.array
+            returns the distance matrix after the subtraction or the reference plane calculated (if 
+            returncalculated_plane is True.)
         """
+       
         import scipy.linalg
         from mpl_toolkits.mplot3d import Axes3D
         overwrite=False
@@ -2012,10 +2247,25 @@ class ns:
 
     def manual_subtractplane(self, plot=False, inverted=True, dil=4,
                              useLens = False):
-        '''
-        See https://gist.github.com/amroamroamro/1db8d69b4b65e8bc66a6
-        for further documentation.
-        '''
+        """Select manually a set of points to be used for fitting a plane and subtracting it
+        from the distance array.
+        
+        Parameters
+        ----------
+        plot : bool, optional
+            if True the plane subtracted is plotted, by default False
+        inverted : bool, optional
+            if True the array is subtracted to the plane (in this way the positive values are peaks), by default True
+        dil : int, optional
+            the dilution factor for speeding up the rendering of the plot, by default 4
+        useLens : bool, optional
+            if True the working range of the lenses is used for visualizing the original matrix, by default False
+        
+        Returns
+        -------
+        np.array    
+            the results of the subtraction as a numpy array.
+        """
         import scipy.linalg
         from mpl_toolkits.mplot3d import Axes3D
 
@@ -2081,6 +2331,13 @@ class ns:
         self.log['Best plane correction'] = 'Done manually'
 
     def sigmafilter(self, sigmas=1):
+        """A filter to mask values grater than a certian number of standard deviation (sigmas)
+        
+        Parameters
+        ----------
+        sigmas : int, optional
+            Number of standard deviation to be used for filtering, by default 1
+        """
         meanar = np.mean(self.array)
         stdar = np.std(self.array)
         arrmask = np.ma.masked_outside(
@@ -2099,7 +2356,8 @@ class ns:
             lens=True,
             total='optimal',
             snrs=512):
-        '''
+        """Mask filter apply a mask to the values that don't meet some quality criteria.
+        
         This is the mask filter that can be used to avoid bad values to be take into
         calulation it affects function as subtract bestplane, and plot every
         numpy function used will not take in account the masked value.
@@ -2108,8 +2366,32 @@ class ns:
         is 500 as suggested by Optimet).
 
         snr can also take snr matrix as input otherwise it will try to use the
-        SNR matrix in the folde.
-        '''
+        SNR matrix in the folder.
+
+        Parameters
+        ----------
+        minz : float, optional
+            [description], by default None
+        maxz : float, optional
+            values greater than this distance will be masked if None the nominal working range of the lens is used, by default None
+        badto : str, optional
+            invalid value can be changed to a specific values this can be 'zero','max' (maximum value), 'none', or np.nan by default False
+        add : int, optional
+            add an offset to minz and maxz, by default 0
+        snr : bool, optional
+            if Ture the snr matrix is used in the computation, by default True
+        lens : bool, optional
+            if True and minz and maxz are None the working range of the lens is used, by default True
+        total : str, optional
+            can be used for setting the threshold for the total filtering ('aceptable' or 'optimal'), by default 'optimal'
+        snrs : int, optional
+            the threshold for the SNR filter, by default 512
+        
+        Returns
+        -------
+        [type]
+            [description]
+        """
         # The firs think to do is masking the np.nans
         self.array = np.ma.masked_invalid(self.array)
         log = ""
@@ -2120,26 +2402,26 @@ class ns:
             if maxz is None:
                 maxz = self.lens.LENS_MAXd + add
 
-            if minz == '-sigma':
-                minz = (np.mean(self.array) - np.std(self.array))
+        if minz == '-sigma':
+            minz = (np.mean(self.array) - np.std(self.array))
 
-            if maxz == '+sigma':
-                maxz = (np.mean(self.array) + np.std(self.array))
+        if maxz == '+sigma':
+            maxz = (np.mean(self.array) + np.std(self.array))
 
-            if minz == '-2sigma':
-                minz = (np.mean(self.array) - 2 * np.std(self.array))
+        if minz == '-2sigma':
+            minz = (np.mean(self.array) - 2 * np.std(self.array))
 
-            if maxz == '+2sigma':
-                maxz = (np.mean(self.array) + 2 * np.std(self.array))
+        if maxz == '+2sigma':
+            maxz = (np.mean(self.array) + 2 * np.std(self.array))
 
-            if minz == '-3sigma':
-                minz = (np.mean(self.array) - 3 * np.std(self.array))
+        if minz == '-3sigma':
+            minz = (np.mean(self.array) - 3 * np.std(self.array))
 
-            if maxz == '+3sigma':
-                maxz = (np.mean(self.array) + 3 * np.std(self.array))
+        if maxz == '+3sigma':
+            maxz = (np.mean(self.array) + 3 * np.std(self.array))
 
-            arrmask = np.ma.masked_outside(self.array, minz - add, maxz + add)
-            log+= ' Between %s mm and %s mm' % (round(minz, 3), round(maxz, 3))
+        arrmask = np.ma.masked_outside(self.array, minz - add, maxz + add)
+        log+= ' Between %s mm and %s mm' % (round(minz, 3), round(maxz, 3))
         else:
             arrmask = self.array
 
