@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.ticker as ticker
-from os import listdir, getcwd, path, makedirs,remove
+from os import listdir, getcwd, path, makedirs,remove, sep
 from .lens import diclens
 __all__ = ['ns']
 
@@ -52,7 +52,7 @@ class ns:
 
     def __init__(self, path, lens=None,init=True):
         self.path = path
-        self.name = path
+        self.name = path.split(os.sep)[-1]
         self.array = np.array([])
         self.missingvaluesarray = None
         self.parameters = self.parameterslist()
