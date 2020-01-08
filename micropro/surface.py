@@ -2987,7 +2987,7 @@ class ns:
 
         self._mk_results_folder()
 
-        with open(r'Results\%s.sdist' % (self.name), "wb") as f:
+        with open(path.join('Results', '%s.sdist' %self.name), "wb") as f:
             newFileByteArray = bytearray(self.array.flatten())
             f.write(newFileByteArray)
 
@@ -2995,7 +2995,7 @@ class ns:
         '''
         Export in .npy format, can be load with np.load()
         '''
-        np.save(r'Results\%s' % (self.name), self.array)
+        np.save(path.join('Results',self.name), self.array)
         self.savelog()
 
     def mat_export(self, mdict = None, savemask =False):
@@ -3012,9 +3012,7 @@ class ns:
             else:
                 mdict = {'m' +
                     self.name: self.array}
-        scipy.io.savemat(
-            r'Results\ ' +
-            self.name,
+        scipy.io.savemat(path.join('Results',self.name),
             mdict=mdict)
         self.savelog()
 
@@ -3025,7 +3023,7 @@ class ns:
         import h5py
         if dataset == '':
             dataset = self.name
-        h5f = h5py.File(r'Results\ '+dataset + '.hdf', 'w')
+        h5f = h5py.File(os.path('Results',dataset + '.hdf'), 'w')
         h5f.create_dataset(dataset, data=self.array)
         self.savelog()
 
@@ -3117,7 +3115,7 @@ class ns:
                   '\n', '\n', 'n\n', '\n', '\n', 'n\n', '\n', '\n', 'n\n', '\n',
                   '\n', 'n\n', '\n', 'end of header\n']
 
-        with open(r'Results\ ' + self.name + 'v2' + '.spm', 'w') as o:
+        with open(path.join(r'Results', self.name + 'v2' + '.spm'), 'w') as o:
             for i in header:
                 o.write(i)
 
@@ -3125,7 +3123,7 @@ class ns:
         self._mk_results_folder()
 
         n = '\n'
-        with open(r'Results\ ' + self.name + '.spm', 'w') as o:
+        with open(path.join('Results',self.name + '.spm'), 'w') as o:
             o.write('ISO/TC 201 SPM data transfer format' + n)
             o.write('general information' + n)
             o.write('' + n)
@@ -3863,7 +3861,7 @@ class ns:
             img = Image.fromarray(rgb_uint8)
             self._mk_results_folder()
             img.save(
-                r'Results\RGB composite %s pixel%s.tiff' %
+                path.join('Results','RGB composite %s pixel%s.tiff' %
                 (self.name, lato))
             plt.imshow(img, interpolation='nearest')
             plt.show()
