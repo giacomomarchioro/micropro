@@ -15,7 +15,8 @@ from .lens import diclens
 __all__ = ['ns']
 
 class ns:
-    '''
+    """New surface (ns) class.
+        
     New surface class (ns):
     This class create an object of the micorprofilometer it allows different method
     to be used with the dot notation. The first thing to do is to create a new
@@ -23,8 +24,15 @@ class ns:
 
     NOTE this module is design to scan over the X axis most of the feature works
     only with this set-up.
-
-    '''
+    Parameters
+    ----------
+    path : str
+        the path of the .dist file.
+    lens : lens obj, optional
+        the lens used during the measurement, by default None
+    init : bool, optional
+        auto-initialization, by default True
+    """
 
     class parameterslist:
 
@@ -1595,17 +1603,20 @@ class ns:
             res = self.parameters.stage_step
             #float(self.sample_infos.width)/res *
 
-    def delcol(self, snr='.dist', v=False, col2remove=-1):
-        '''
+    def delcol(self, v=False, col2remove=-1):
+        """Deletes columns form the array
+        
         It takes the name of the output file form the profilometer. It returns
         an array with the data rearranged. Deleting the last number of the row,
         this can solve the issue of misalingment of the rows.
 
-        col2remove: default is -1 can be change 0 for the first one
-
-
-
-        '''
+        Parameters
+        ----------
+        v : bool, optional
+            verbose mode for diagnostic purposes, by default False
+        col2remove : int, optional
+            the number of column to be removed 0 for the first column, by default -1
+        """
         self.inizialize()
         b = np.delete(self.array, np.s_[col2remove], axis=1)
         rowtoflip = list(range(1, self.parameters.numrows, 2))
@@ -1827,10 +1838,40 @@ class ns:
             QC=False,
             returncalculated_plane= False
             ):
-        '''
+             """
+         tsadf
+
+         Parameters
+         ----------
+         Method of asdf  class
+         plot : bool
+             asdf aovea (default False)
+         inverted : bool
+             asdf  (default True)
+         eliminate_mask : bool
+             vasdf  (default False)
+         dil : int
+             asdfasd  (default 10)
+         array :  np.array
+             asdfasdf (default None)
+         order : int
+             fasdasdf (default 1)
+         zprop : bool
+             afsdf (default False)
+         refplane : bool
+             asdfas (default True)
+         QC : bool
+             asdfas (default False)
+         returncalculated_plane : bool
+             asdfas (default False)
+
+         Returns
+         -------
+         asdfa
+
         See https://gist.github.com/amroamroamro/1db8d69b4b65e8bc66a6
         for further documentation.
-        '''
+        """
         import scipy.linalg
         from mpl_toolkits.mplot3d import Axes3D
         overwrite=False

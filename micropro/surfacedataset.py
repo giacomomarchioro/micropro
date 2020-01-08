@@ -788,9 +788,9 @@ class surfacedataset:
             for a in self.surfaces:
                 a.mat_export(savemask=savemask)
         else:
-            scipy.io.savemat(
-                r'Results\ ' +
-                self.name,
+            scipy.io.savemat(path.join(
+                'Results',
+                self.name),
                 mdict=mdict)
         self.save_log()
 
