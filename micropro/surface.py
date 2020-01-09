@@ -20,7 +20,7 @@ class ns:
     New surface class (ns):
     This class create an object of the micorprofilometer it allows different method
     to be used with the dot notation. The first thing to do is to create a new
-    surface. This class automatically inizialize the instances with a method.
+    surface. This class automatically initialize the instances with a method.
 
     NOTE this module is design to scan over the X axis most of the feature works
     only with this set-up.
@@ -106,7 +106,7 @@ class ns:
 #        newsurface.array=self.array-other.array
 #        return newsurface
     def acoustic_init(self,path=True):
-        """Loading acuostic microscopy data in mat file.    
+        """Loading acoustic microscopy data in mat file.    
         
         Parameters
         ----------
@@ -144,10 +144,10 @@ class ns:
 
     def inizialize(self):
         """
-        This is a inzizlizing fucntion design to retrieve data form the header
+        This is a initializing function design to retrieve data form the header
         file of the microprofilometer. It returns all the parameters useful to
         perform further analysis of the data.
-        A 2D array of raw data, unflipped and unmasked is formed at the end
+        A 2D array of raw data, un-flipped and unmasked is formed at the end
         of the process and stored in self.array. This will be the base for
         further processing.
         """
@@ -385,7 +385,7 @@ class ns:
             self.lens.Repeatability)
 
         if self.parameters.laserpower < 10:
-            print("LASER POWER LOW, WAVELENGHT MIGHT BE UNSTABLE!")
+            print("LASER POWER LOW, WAVELENGTH MIGHT BE UNSTABLE!")
         if self.parameters.numrows * self.parameters.numcols != arr.size:
             print("WARNING! SIZES DO NOT MATCH!")
             diff = self.parameters.numrows * self.parameters.numcols - arr.size
@@ -399,7 +399,7 @@ class ns:
                 b = arr.reshape(-1, self.parameters.numcols + g)
             srx = b.shape[0] - self.parameters.numrows
             scx = b.shape[1] - self.parameters.numcols
-            print(" I am trying to fix it passing %s for rows and %s for coloumns" % (srx, scx))
+            print(" I am trying to fix it passing %s for rows and %s for columns" % (srx, scx))
             self.parameters.numrows += srx
             self.parameters.numcols += scx
             self.log['supplementary rows'] = srx
@@ -426,7 +426,7 @@ class ns:
             matrix : bool, optional
                 reconstruct the total matrix otherwise it will compute the mean value, by default False
             plot : str, optional
-                show the recoonstructed Total matrix return a plot to show the data
+                show the reconstructed Total matrix return a plot to show the data
              use the argument plot='show' or plt.show(), by default 'show'
             cartesian : bool, optional
                 show the matrix using cartesian coordinate system 0,0 botttom left corner, by default True
@@ -522,7 +522,7 @@ class ns:
                                         extend='both',
                                         orientation=orientation)
                     cbar.set_ticks([900,1050,1200,8600,16000,17000,18000])
-                    cbar.set_ticklabels([900,'aceptable',1200,'optimal',16000,'aceptable',18000])
+                    cbar.set_ticklabels([900,'acceptable',1200,'optimal',16000,'acceptable',18000])
 
 
 
@@ -654,7 +654,7 @@ class ns:
                 # See missing value function for a better expanation of how
                 # the correction is perfromed
                 b1 = a.reshape(-1, self.parameters.numcols)
-                print('Now correcting the missing value...')
+                print('Now correcting the missing values...')
                 repariedmatrix = []
                 for i, j in zip(b1, self.missingvaluesarray):
                     leng = np.count_nonzero(j)
@@ -693,14 +693,14 @@ class ns:
                     b = b/10.24
                     bounds = np.array([30,50,100])
                     tiks = [30,40,50,75,100]
-                    tiks_lab = [30,'aceptable',50,'accurate',100]
+                    tiks_lab = [30,'acceptable',50,'accurate',100]
                     labelKJ = 'SNR (%)'
                 else:
                     mesh = axs.pcolormesh(b)
                     bounds = np.array([307,512,1024])
                     labelKJ = 'SNR (Raw value)'
                     tiks = [307,409,512,768,1024]
-                    tiks_lab = [307,'aceptable',512,'accurate',1024]
+                    tiks_lab = [307,'acceptable',512,'accurate',1024]
 
                 if cmap == 'c':
                     mesh = axs.pcolormesh(b)
@@ -890,7 +890,7 @@ class ns:
             return False
 
     def QualityControl(self,user = 'GM'):
-        """Perform a quality control on the measurment.
+        """Perform a quality control on the measurement.
         
         This function allows to perform the quality control of the data collected. The user is asked to evaluate
         different parameters that are indicators of the quality of the scan.
@@ -1685,7 +1685,7 @@ class ns:
                  title='3D Plot',zprop=True,cm ='cw'):
         """3D plot of the distance array using matplotlib.
         
-        This function uses matplotlib for producing a 3D plot of the distnaces array.
+        This function uses matplotlib for producing a 3D plot of the distances array. 
         Matplotlib is slower compared to Mayavi hence is preferable to use self.tredplotmayavimesh.
 
         Parameters
@@ -2476,6 +2476,37 @@ class ns:
             shift=0,
             plot=True,
             title=True):
+        """Plot the Amplitude Distribution function
+        
+        This function shows the distribution of heights as an histogram.
+        This is called Amplitude Distribution function. The vertical lines 
+        represent the working range of the probe if the lens object is available.
+
+        Parameters
+        ----------
+        vminx : float or str, optional
+            the minumim value of the x axis, accept also '-sigma','-2sigma',
+            '-3sigma', by default None
+        vmaxx : float or str, optional
+            the maximum value of the x axis accept also 'sigma','2sigma','3sigma',
+             by default None
+        auto : bool, optional
+            finde automatically the min and max value of the x axis, by default True
+        vlines : bool, optional
+            if true vertical lines representing the working range if lens object is 
+            available are shown, by default True
+        shift : int, optional
+            the shifting of the vertical lines, by default 0
+        plot : bool, optional
+            if Ture the plot is shown, by default True
+        title : bool, optional
+            the title of the plot, by default True
+        
+        Returns
+        -------
+        matplotlib.pyplot object
+            matpltolib plot object
+        """
         '''
         ADF, Amplitude Distribution Function
         '''
@@ -2570,9 +2601,28 @@ class ns:
                 return plt
 
     def timing_diagram(self, xlim='auto', plot=True):
-        '''
-        test the trigger and CCD frequency and plot a timing diagram
-        '''
+        """Test and plot the timing diagram of the CCD and the axis trigger
+
+        This function uses the axis velocity and the stage step for calculating 
+        the trigger frequency. It is mandatory for calculating the exposure lenght.
+        Eventually, it is possible to plot the timing diagram, for comparing 
+        the frequency of the trigger with the frequency of the CCD of the probe.
+        Note that if the frequency of the trigger is not a multiple of the 
+        frequency of the CCD the probe might lose many measuremets, resulting in a
+        high number of missing values.
+
+        Parameters
+        ----------
+        xlim : str, optional
+            the limit of the x axis, by default 'auto'
+        plot : bool, optional
+            if True the plot is shown, by default True
+        
+        Returns
+        -------
+        matplotlib.pyplot
+            matplotlib.pyplot object for plotting
+        """
         from squarewave import sqwav
         time = (self.parameters.rangeX) / float(self.parameters.X_axis_vel)
         Freq = self.parameters.numcols / time
@@ -2611,15 +2661,30 @@ class ns:
             laserdirection='s',
             shifterror=False,
             plot=True):
-        '''
-        This function gives you an insight on the resolution it shows you the
+        """Plots an estimation of the spot irradiate by the laser and the pattern.
+        
+        This function gives you an insight on the resolution, when performing 
+        acquisition in dynamic mode. It shows you the
         dimension of the laser spot size its initial and final postions, and
         the space that the laser has been moving while recording the line.
         The disalingment due to the CCD frequency can be evaluated.
 
-        legend: True gives you a zoom on the first two measurment with the legend
-        centroids: plot centroids in a separate plot
         '''
+
+        Parameters
+        ----------
+        centroid : bool, optional
+            if True a plot of the centroid is shown by default True
+        angle : int, optional
+            the angle of the elipse representing the laser spot, by default 0
+        laserdirection : str, optional
+            The direction of the laser spot (laser diodes might have elipsodial shape), by default 's'
+        shifterror : bool, optional
+            [description], by default False
+        plot : bool, optional
+            if True the plot is shown., by default True
+        """
+
         from matplotlib.patches import Ellipse
         # Trigger meshgrid signlas
         X, Y = np.meshgrid(
@@ -2774,22 +2839,22 @@ class ns:
                               save = 'ROI',
                               suffix='_ROI',
                               ):
-        '''
-        Return ROI of array to self.ROI.
-
-        ------------------
-         Keyword arguments:
-             scalingfactor -- undesample matrix to allow visualization and avoid
-             memory errors, notice the ROI will mantain the original size (default is 1)
-             useSNR -- use SNR matrix to choose the ROI (default is False)
-
-
-
-        -----------------
-        Returns:
-            missing values
-
-        '''
+        """Select interactively a regions of interest it the acquisition.
+        
+        Parameters
+        ----------
+        scalingfactor : int, optional
+            the scalingfactor is used when the whole acquisition can not be plot 
+            due to memory limitations, by default 1
+        useSNR : bool, optional
+            instead of showing the distances matrix is uses the SNR matrix, the ROI will be however taken
+            from the distance matrix, by default False
+        save : str, optional
+            if 'ROI' the ROI are save in self.ROI if 'overwrite' in self.array if 
+            'indexes' only the indexes are saved, by default 'ROI'
+        suffix : str, optional
+            the suffix to be used when saving the ROI, by default '_ROI'
+        """
         newarray = self.array
         counter = [1]
         from matplotlib.widgets import RectangleSelector
@@ -2838,10 +2903,12 @@ class ns:
                 self.crop(y1=y1,y2=y2,x1=x1,x2=x2,
                                      copy =False,
                                      )
-            else:
+            if save == 'indexes':
                 self.ROIs_indices[suffix+str(counter[0])] = (y1,y2,x1,x2)
                 counter[0] +=1
                 print("All ROI indices saved in self.ROI_indices")
+            else:
+                raise ValueError("%s is not a valid parameter for save argument" %save)
 
 
 
@@ -2870,6 +2937,38 @@ class ns:
 
 
     def crop(self,y1,y2,x1,x2,copy=False,suffix=False):
+        """Crop acquisition and recompute the acquisition dimension
+        
+        This is a better approach for cropping the array. It allows
+        the creation of new ns object with deep copying using the 
+        copy arguments.
+
+        After the cropping, it recalculates:
+        surf.parameters.numcols 
+        surf.parameters.numrows 
+        surf.parameters.rangeX 
+        surf.parameters.rangeY 
+
+        Parameters
+        ----------
+        y1 : int
+            the intial y value (corresponding to the row)
+        y2 : int
+            the final y value (correspoinding to the last row)
+        x1 : int
+            the intial x value (correspoinding to the column)
+        x2 : int
+            the final x value (corresponding to the column)
+        copy : bool, optional
+            if True the cropo does not overwrite self.array, by default False
+        suffix : str, optional
+            the suffix to be appended to the self.name, by default False
+        
+        Returns
+        -------
+        ns instace    
+            if copy=True it return a surface object ns mantaining the oringal.
+        """
 
         if copy:
             import copy
@@ -2890,6 +2989,22 @@ class ns:
             return surf
 
     def crop_concentric_ROI(self,square_high__mm=1, usecorners = False,corner = 'TL'):
+        """Crop a region of interest centered on the accquisition.
+        
+        This method can be used for cropping the scan to get a square region of interest.
+        It finds the center of the acquisition and crop a square with the side equal to 
+        square_high_mm.
+        If usecroners==True it uses the coreners detected using self.cornersdetector.
+
+        Parameters
+        ----------
+        square_high__mm : int, optional
+            side of the square of the ROI, by default 1
+        usecorners : bool, optional
+            if True the corners found using the self.cornersdetector are used, by default False
+        corner : str, optional
+            corner to be used for testing (TO BE REMOVED), by default 'TL'
+        """
         #calculate the side of square in pts
         pts = int(round(square_high__mm/self.parameters.stage_step/2,0))
         if usecorners:
@@ -2919,6 +3034,27 @@ class ns:
 
 
     def concentric_ROI(self,step=20,plot='show',save=False):
+        """Subdivide the area in concentric ROI with increasing side
+         and compute metrological parameters for each iteration increases
+         the side of the ROI by 2*step*i.
+
+         This procedure is helpful for understanding the homogeneity of the ROI. 
+        
+        Parameters
+        ----------
+        step : int, optional
+            the number of  measurments of HALF of the side of the ROI.
+        plot : str, optional
+            if 'show' the resulting plot is show, by default 'show'
+        save : bool, optional
+            if True the results are saved, by default False
+        
+        Returns
+        -------
+        tuple
+            a tuple containing four lists with the distancefromcenter,Sq,
+            Rskw, Rkurt
+        """
         from scipy.stats.mstats import skew, kurtosis
         ycent, xcent = np.array(self.array.shape)/2
         distancefromcenter = []
@@ -2965,7 +3101,7 @@ class ns:
             if save:
                 self._save_plot(fig2,'%s DistVsSkKur.png' %(self.name))
                 ACD = self.plot(rectangle=rectangles, unit='micron',plot=False)
-                ACD.savefig(r'%s\Results\%s ConcentricROIPlot.png'%(getcwd(),self.name))
+                ACD.savefig(os.path.join(getcwd(),'Results','%s ConcentricROIPlot.png'%self.name)
                 plt.close()
 
 
@@ -2973,6 +3109,28 @@ class ns:
         return distancefromcenter,Sq,Rskw, Rkurt
 
     def margin_ROI(self,step=20,plot='show',save=False):
+        """Compute metrological paramters excluding an increasing portion of the margin
+        
+        This method is analogues to self.concentric_ROI but it does not require the sample to be
+        squared. For each iteration excludes a greater boarder from the commputation starting from
+        the a margin excluding the value assigne to the variable *step* and increasing the margin of
+        step*i where i is the iteration number.
+
+        Parameters
+        ----------
+        step : int, optional
+            initial with of the margin excluded by the compuatation in measurments, by default 20
+        plot : str, optional
+            if 'show' a plot showin the procedure is shown at the end, by default 'show'
+        save : bool, optional
+            if True the results are save to file, by default False
+        
+        Returns
+        -------
+        tuple
+            a tuple containing four lists with the value computed for each iteration 
+            margin, Sq, Rskw, Rkurt.
+        """
         from scipy.stats.mstats import skew, kurtosis
         import matplotlib.ticker as ticker
         ycent, xcent = np.array(self.array.shape)/2
@@ -3035,47 +3193,41 @@ class ns:
             if save:
                 self._save_plot(fig2,'%s MarginVsSkKur.png' %(self.name))
                 ACD = self.plot(rectangle=rectangles, unit='micron',plot=False)
-                ACD.savefig(r'%s\Results\%s MarginROIPlot.png'%(getcwd(),self.name))
+                ACD.savefig(os.path.join(getcwd(),'Results','%s MarginsROIPlot.png'%self.name)
                 plt.close()
 
 
 
         return margin,Sq,Rskw, Rkurt
 
-
-    def analyize_ROI(self, bottomleftxy, width, height, show=False):
-        '''
-
-                     width
-                    _______
-                  h |     |
-                    x,y___|
-        '''
-        from scipy.stats import skew
-        ROI = self.array[
-            xytopright[0]:xybottomleft[0],
-            xytopright[1]:xybottomleft[1]]
-
-        return np.std(ROI) * 1000, skew(ROI.flatten())
-
-    def getROI(self, xytopleft, xybottomright,):
-        '''
-        Return ROI.
-        '''
-        ROI = self.array[
-            xytopleft[1]:xybottomright[1],
-            xytopleft[0]:xybottomright[0]]
-
-        return ROI
-
     def calculate_profile_metrology(self,profile=None,roundx=3):
+        """Calculates some amplituted metrology parameters for a profile.
+        
+        This function was meant to be used for computing the surface metrolgoy
+        parameters for the profiles using a discrete aproximation.
+
+        # TODO: define sampling lenght and continuous calculation
+
+        Parameters
+        ----------
+        profile : np.array, optional
+            The profile to be used, by default None
+        roundx : int, optional
+            The number of digit to be rounded, by default 3
+        Returns
+        -------
+        dict
+            a dictionary structured as followed 
+            {'Rz':Rz, 'Rv':Rv, 'Rt':Rt, 'Ra':Ra, 'Rp':Rp, 'Rq':Rq,
+                        'Rsk':Rsk, 'Rku':Rku, 'Rc':Rc}
+        """
         ##  DEFINE SAMPLING LENGHT !!!!
     ####
         from scipy.stats.mstats import skew, kurtosis
         if self.log['Best plane correction']== 'Not Performed':
             print('WARINING BEST PLANE NOT PERFORMED!')
-        if ROI == None:
-            data=self.array
+        if profile == None:
+            data=self.array[0]
 #        Amplitude parameters
 #    Rz, maximum height of the profile: defined on the sampling length:
 #        this parameter is frequently used to check whether the profile
@@ -3148,8 +3300,31 @@ class ns:
 
     def calculate_area_metrology(self,ROI=None,roundx=3,
                                  margin=None,subtractplane = False):
+        """Calculates area metrology parameters.
+        
+        Parameters
+        ----------
+        ROI : [type], optional
+            uses the indexes of in the list for selecting a region of interest 
+            data=self.array[ROI[0]:ROI[1],ROI[2]:ROI[3]], by default None
+        roundx : int, optional
+            [description], by default 3
+        margin : int, optional
+            a margin can be applied for excluding measurments in the boarder, by default None
+        subtractplane : bool, optional
+            if True a plane subtraction is performed on the data (useful if we are using a ROI)
+            and we did not subtract the plane before, by default False
+        
+        Returns
+        -------
+        dict
+            a dictionary structured as followed 
+            dicmetrology = {'Sz_microns':Sz, 'Sv_microns':Sv, 'St_microns':St, 
+            'Sar_microns':Sar, 'Sp_microns':Sp, 'Sq_microns':Sq,
+                        'Ssk':Ssk, 'Sku':Sku, 'Sa_microns':Sa}
+        """
         from scipy.stats.mstats import skew, kurtosis
-        if self.log['Best plane correction']== 'Not Performed':
+        if self.log['Best plane correction'] == 'Not Performed':
             print('WARINING BEST PLANE NOT PERFORMED!')
         else:
             if subtractplane and self.log['Best plane correction']== 'Performed':
@@ -3238,40 +3413,27 @@ class ns:
                         'Ssk':Ssk, 'Sku':Sku, 'Sa_microns':Sa}
         return dicmetrology
 
-
-
-    def takenote(self):
-        from scipy.stats import skew
-        with open(r"C:\Users\OPdaTe\Documents\Microprofilometro - Acquisizioni\notes.txt", "a") as myfile:
-            myfile.write(
-                "%s -> %s microns , %s " %
-                (self.name,
-                 np.std(
-                     self.array) *
-                    1000),
-                skew(
-                    self.array.flatten()) +
-                '\n')
-
     def go(self):
+        """Perform self.mfilter self.subtractplane and self.plot with the default parameters.
+        """
         self.mfilter()
         self.subtractplane()
         self.plot()
 
 #♣Exporting tools.
     def GEOTIFF(self):
-        import osgeo.gdal as gdal
-        """Array > Raster
-        Save a raster from a C order array.
+        """ Export the data in GEOTIFF using gdal
 
-        :param array: ndarray
+        Save a raster from a C order array.
 
         +proj=tmerc +lat_0=51.4 +lon_0=7 +k=1 +x_0=0 +y_0=0 +ellps=WGS84
         +towgs84=0,0,0,0,0,0,0 +units=m +no_defs
+
         """
+        import osgeo.gdal as gdal
         self._mk_results_folder()
 
-        dst_filename = r'Results\ ' + r'%s.tiff' % (self.name)
+        dst_filename = path.join("Results","%s.tiff" %self.name)
         # You need to get those values like you did.
         x_min = float(self.parameters.job_x_origin_mm) + self.parameters.offset
         # x_min & y_max are like the "top left" corner.
@@ -3304,10 +3466,8 @@ class ns:
         # without dataset.
 
     def binary_export(self):
-        '''
-        Export of the flatten self.array parameter.
-        '''
-
+        """Export of the flatten self.array parameter.
+        """
         self._mk_results_folder()
 
         with open(path.join('Results', '%s.sdist' %self.name), "wb") as f:
@@ -3315,16 +3475,22 @@ class ns:
             f.write(newFileByteArray)
 
     def npy_export(self):
-        '''
-        Export in .npy format, can be load with np.load()
-        '''
+        """Export in .npy format, can be load with np.load()
+        """
         np.save(path.join('Results',self.name), self.array)
         self.savelog()
 
     def mat_export(self, mdict = None, savemask =False):
-        '''
-        Export in .mat format.
-        '''
+        """Export in .mat format.
+        
+        Parameters
+        ----------
+        mdict : dict, optional
+            the dictionary to be save can be created manually when
+            None is created automatically, by default None
+        savemask : bool, optional
+            if Ture the mask is save as a separate matrix in the mat dict, by default False
+        """
         import scipy.io
 
         self._mk_results_folder()
@@ -3340,9 +3506,13 @@ class ns:
         self.savelog()
 
     def h5f_export(self, dataset=''):
-        '''
-        Export in .hdf5 format.
-        '''
+        """Export in .hdf5 format
+        
+        Parameters
+        ----------
+        dataset : str, optional
+            the title of the dataset when '' the self.name is used, by default ''
+        """
         import h5py
         if dataset == '':
             dataset = self.name
@@ -3351,6 +3521,13 @@ class ns:
         self.savelog()
 
     def gwy_export(self,unit = "mm"):
+        """Export the data using gwyfile module for Gwiddion
+        
+        Parameters
+        ----------
+        unit : str, optional
+            the unit of measurment, by default "mm"
+        """
         from gwyfile.objects import GwyContainer, GwyDataField, GwySIUnit
         obj = GwyContainer()
         obj["/0/data/title"] = self.name
@@ -3443,6 +3620,8 @@ class ns:
                 o.write(i)
 
     def SPM_export(self):
+        """export the data in SPM format
+        """
         self._mk_results_folder()
 
         n = '\n'
@@ -3605,7 +3784,7 @@ class ns:
         return xyz, number_of_vertex
 
     def ASCII_export(self, kind='ply', invertvalue=False, centroids=False):
-        '''
+        """
         Method of ns class
         Export the array in a ASCII .ply format.
 
@@ -3621,7 +3800,7 @@ class ns:
         Returns
         -------
         Save a .ply file in the Result folder.
-        '''
+        """
 
         n = '\n'
         xyz,nv = self.pointCloud_generator(centroids=centroids,invertvalue=invertvalue)
@@ -3655,7 +3834,18 @@ class ns:
                 for i in xyz:
                     o.write('%.4e\t%.4e\t%.4e' % (i[0], i[1], i[2]) + n)
 
-    def exp_appyreport(self, metrology=3,flipyax=None):
+    def exp_appyreport(self, tpath, metrology=3,flipyax=None):
+        """Export a report in odt if a tempalte is available
+        
+        Parameters
+        ----------
+        tpath: str,
+            the path of the template
+        metrology : int, optional
+            the number of ROI to be selected in the report, by default 3
+        flipyax : int, optional
+            if -1 the axis is flipped, by default None
+        """
         '''
         exp_appyreport export report with data directly from the project. The
         template used is called template.odt. The variables can be acessed
@@ -3828,14 +4018,32 @@ class ns:
         except OSError:
             pass
          # Here you find the path of the template
-        renderer = Renderer(r"C:\Users\OPdaTe\Documents\Microprofilometro - Acquisizioni\Template_new_metro%s.odt" %(metrology), locals(), '%s.odt' % (self.path))
+        renderer = Renderer(os.join(tpath,"Template_new_metro%s.odt" %(metrology),
+                            locals(), '%s.odt' % (self.path))
         renderer.run()
         #restore original figsize
         plt.rcParams['figure.figsize'] =  originalfigsize
         gc.collect()
 
     def viewer(self, absolute=False,complete=True):
-        # Based on PythonQwt https://pypi.python.org/pypi/guiqwt
+        """A viewr based on PythonQwt
+        
+        Based on https://pypi.python.org/pypi/guiqwt this
+        viewer allows to inspect the data.
+
+        Parameters
+        ----------
+        absolute : bool, optional
+            if True absolute coordante systems is used, by default False
+        complete : bool, optional
+            if Ture also SNR and Total are loaded, by default True
+        
+        Returns
+        -------
+        win
+            a PythonQwt object
+        """
+        # Based on PythonQwt 
 
         sx = 0
         sy = 0
@@ -4052,10 +4260,46 @@ class ns:
         return filtered_surf
 
     def normalize_0to255(self,astype = np.uint8):
+        """Normalize the data to the range 0-255
+        
+        Parameters
+        ----------
+        astype : type, optional
+            the type of the new data, by default np.uint8
+        
+        Returns
+        -------
+        np.array
+            The normalized np.array
+        """
         return (255*(self.array - np.min(self.array))/np.ptp(self.array)).astype(astype)
 
-    def Segmentation(self, lato, kind=None, mfilter=True,
-                      overwrite=False,margin=None,norm=False):
+    def Segmentation(self, side, kind=None, mfilter=True,
+                      overwrite=False,margin=None,norm=False): 
+        """Divides the scan in squeres with equal side and compute metrological parameters for each squere.
+        
+        Parameters
+        ----------
+        side : int
+            the side of the squares.
+        kind : int, optional
+            the process to be carried out for each square 1 - Roughenss
+            2 - Skwenness, 3 - Kurtosis,4 - False Color Composite,
+            5 - Equalized False Color Composite, if None the user is aske to chose, by default None
+        mfilter : bool, optional
+            if True the mfilter is used, by default True
+        overwrite : bool, optional
+            if True the self.array is overwrited with the results of self.Segmentation, by default False
+        margin : int optional
+            the margins to be exclueded from the computation in number of measurments, by default None
+        norm : bool, optional
+            if True the results is divided by the mean if 'to1' is also normalized to 1, by default False
+        
+        Returns
+        -------
+        np.array
+            the array with the computed values
+        """
         from scipy.stats import skew, kurtosis
         if kind is None:
             print(" Select operation to perform on patches:")
@@ -4077,8 +4321,8 @@ class ns:
             filteredarr=filteredarr[margin:-margin,margin:-margin]
 
         h, w = filteredarr.shape
-        restor = h % lato
-        restoc = w % lato
+        restor = h % side
+        restoc = w % side
 
         if restoc != 0 and restor != 0:
             final = filteredarr[:-restor, :-restoc]
@@ -4093,9 +4337,9 @@ class ns:
         else:
             final = filteredarr
 
-        numcolsa = final.shape[1] / lato
+        numcolsa = final.shape[1] / side
         print(numcolsa)
-        numrowsa = final.shape[0] / lato
+        numrowsa = final.shape[0] / side
         print(numrowsa)
 
         #Form here starts the segmentation
@@ -4113,11 +4357,11 @@ class ns:
                 a = np.split(
                     np.ravel(
                         np.column_stack(
-                            (final[ini:(lato * i),::]))),
+                            (final[ini:(side * i),::]))),
                     numcolsa)
                 for k in a:
                     arr.append(np.nanstd(k))
-                ini += lato
+                ini += side
 
 
         elif kind == 2:
@@ -4127,11 +4371,11 @@ class ns:
                 a = np.split(
                     np.ravel(
                         np.column_stack(
-                            (final[ini:(lato * i),::]))),
+                            (final[ini:(side * i),::]))),
                     numcolsa)
                 for k in a:
                     arr.append(skew(k))
-                ini += lato
+                ini += side
 
         elif kind == 3:
             if overwrite:
@@ -4140,24 +4384,24 @@ class ns:
                 a = np.split(
                     np.ravel(
                         np.column_stack(
-                            (final[ini:(lato * i),::]))),
+                            (final[ini:(side * i),::]))),
                     numcolsa)
                 for k in a:
                     arr.append(kurtosis(k))
-                ini += lato
+                ini += side
 
         elif kind == 4 or kind == 5:
             for i in range(1, numrowsa + 1):
                 a = np.split(
                     np.ravel(
                         np.column_stack(
-                            (final[ ini:( lato * i),::]))),
+                            (final[ ini:( side * i),::]))),
                     numcolsa)
                 for k in a:
                     R.append(np.std(k))
                     G.append(skew(k))
                     B.append(kurtosis(k))
-                ini += lato
+                ini += side
 
             R_arr = np.array(R).reshape(numrowsa, numcolsa) - np.min(R)
             G_arr = np.array(G).reshape(numrowsa, numcolsa) - np.min(G)
@@ -4185,7 +4429,7 @@ class ns:
             self._mk_results_folder()
             img.save(
                 path.join('Results','RGB composite %s pixel%s.tiff' %
-                (self.name, lato))
+                (self.name, side))
             plt.imshow(img, interpolation='nearest')
             plt.show()
             return
@@ -4197,12 +4441,12 @@ class ns:
                 a = np.split(
                     np.ravel(
                         np.column_stack(
-                            (final[ini:(lato * i),::]))),
+                            (final[ini:(side * i),::]))),
                     numcolsa)
                 for k in a:
                     arr.append(abs(np.nanmin(k)))
                     arr2.append(np.nanmax(k))
-                ini += lato
+                ini += side
 
         elif kind == 7:
             #J. Europ. Opt. Soc. Rap. Public. 9, 14032 (2014)
@@ -4215,16 +4459,16 @@ class ns:
                     a = np.split(
                         np.ravel(
                             np.column_stack(
-                                (final[ini:(lato * i),::]))),
+                                (final[ini:(side * i),::]))),
                         numcolsa)
 
                     for sub_ar in a:
-                        subarea_mat.append(sub_ar.reshape(lato,lato))
+                        subarea_mat.append(sub_ar.reshape(side,side))
 
-            x1 = random.randint(0,lato-1)
-            y1 = random.randint(0,lato-1)
-            x2 = random.randint(0,lato-1)
-            y2 = random.randint(0,lato-1)
+            x1 = random.randint(0,side-1)
+            y1 = random.randint(0,side-1)
+            x2 = random.randint(0,side-1)
+            y2 = random.randint(0,side-1)
 
             dist_vector_r = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)*self.parameters.stage_step
             for n,ROI in enumerate(subarea_mat):
@@ -4232,10 +4476,10 @@ class ns:
 
 
         if overwrite:
-            self.parameters.stage_step = self.parameters.stage_step * lato
+            self.parameters.stage_step = self.parameters.stage_step * side
             self.array = np.array(arr).reshape(numrowsa, numcolsa)
             self.log['Processing'] = self.log['Processing'].join(
-                'Roughness segmentation side:%s' % (lato))
+                'Roughness segmentation side:%s' % (side))
             self.parameters.numcols = self.array.shape[1]
             self.parameters.numrows = self.array.shape[0]
             if norm:
@@ -4262,20 +4506,42 @@ class ns:
                            ylim = None,
                            norm = False
                            ):
-        '''
+        """Divides the scan area in contiguous squares of increasing area 
+        and compute metrological parameters for each step
+
+        This function iterates self.Segmentation for square of different side
+        the computation carried out for each square is the same of 
+        self.Segmentation.
         1 - Std. Deviation Roughness
-
         2 - Skewness
-
         3 - Kurtosis
-
         6 - This is a 2D implementation of the 1D algorithm proposed in:
         The multi-scale roughness analyses and modeling of abrasion with the grit
         size effect on ground surfaces.
-        Wear 286-287 (2012) 124-135
-
-        Maxence Bigerelle et al.
-        '''
+        Wear 286-287 (2012) 124-135  Maxence Bigerelle et al.
+  
+        Parameters
+        ----------
+        kind : int
+            the kind of computation required
+        step : int
+            the increasing factor of the square side
+        plot : bool, optional
+            if True the results are plotted, by default True
+        save : bool, optional
+            if True the results are saved to disk, by default True
+        xlim : float, optional
+            the xlim of the plot, by default None
+        ylim : tuple, optional
+            the ylim of the plot, by default None
+        norm : bool, optional
+            if Ture the results are divided by the mean if 'to1' are also normalized to 1, by default False
+        
+        Returns
+        -------
+        dict
+            a dictionary with the results of self.Segmentation for each step
+        """
         multiseg = {}
         maxside = self.array.shape[0]/2
         if kind == 6:
@@ -4289,7 +4555,7 @@ class ns:
             steps = list(range(2,maxside,step))
         for t in steps:
             scale = round(t*self.parameters.stage_step*1000,1)
-            multiseg[scale] = self.Segmentation(kind=kind,lato=t, norm = norm)
+            multiseg[scale] = self.Segmentation(kind=kind,side=t, norm = norm)
 
 
         if plot:
@@ -4370,7 +4636,7 @@ class ns:
             n_segments=250,
             compactness=0.1,
             enforce_connectivity=True):
-        '''
+        """
         Method of ns class
         This is a wrapper for SLIC Segmentation from skimage. It allows a clever
         segmentation of the image where the superpixels don't have fixed areas
@@ -4404,7 +4670,7 @@ class ns:
         -------
         Return an array with the roughness calculated for every superpixel.
 
-        '''
+        """
         from skimage.segmentation import slic
         from skimage.segmentation import mark_boundaries
         if minz is None or maxz is None:
@@ -4452,12 +4718,27 @@ class ns:
 #Utilities
 
     def _mk_results_folder(self):
+        """This is an utility function that creates the folder results if does not exists
+        """   
          if not path.exists('Results'):
             makedirs(path.join(getcwd(),'Results'))
 
-    def _save_plot(self,fig,name):
+    def _save_plot(self,fig,name),dpi=300:
+        """Save the plot to disk
+
+        This is an utility function for saving the
+        plot to disk.
+        
+        Parameters
+        ----------
+        fig : fig
+            a matplotlib figure type object
+        name : str
+            the name of the figure
+        dpi : int, optional
+            the dot per inch of the figure
+        """
         self._mk_results_folder()
-        dpi = 300
         while True:
             try:
                 fig.savefig(path.join('Results',name), dpi = dpi)
