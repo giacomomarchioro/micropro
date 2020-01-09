@@ -419,40 +419,40 @@ class ns:
             cartesian=True, absolute=False, replacewith=0,dilution=False,
             QC=False,cmap='d',title=True, orientation = 'auto'
             ):
-            """Compute the average Total value and allows displaying the Total matrix.
-            
-            Parameters
-            ----------
-            matrix : bool, optional
-                reconstruct the total matrix otherwise it will compute the mean value, by default False
-            plot : str, optional
-                show the reconstructed Total matrix return a plot to show the data
-             use the argument plot='show' or plt.show(), by default 'show'
-            cartesian : bool, optional
-                show the matrix using cartesian coordinate system 0,0 botttom left corner, by default True
-            absolute : bool, optional
-                use the absolute reference system of the stages, by default False
-            replacewith : int, optional
-                the value to be used instead of the missing values, by default 0
-            dilution : bool, optional
-                for saving memory the plot can be the result of a sampling, by default False
-            QC : bool, optional
-                perform the quality control, by default False
-            cmap : str, optional
-                the colormap to be used 'd' for showing discreate values 'c' for continuous, by default 'd'
-            title : bool, optional
-                the title to be displayed, by default True
-            orientation : str, optional
-                the orientation of the colorbar, by default 'auto'
-            
-            Returns
-            ----------
+        """Compute the average Total value and allows displaying the Total matrix.
+        
+        Parameters
+        ----------
+        matrix : bool, optional
+            reconstruct the total matrix otherwise it will compute the mean value, by default False
+        plot : str, optional
+            show the reconstructed Total matrix return a plot to show the data
+            use the argument plot='show' or plt.show(), by default 'show'
+        cartesian : bool, optional
+            show the matrix using cartesian coordinate system 0,0 botttom left corner, by default True
+        absolute : bool, optional
+            use the absolute reference system of the stages, by default False
+        replacewith : int, optional
+            the value to be used instead of the missing values, by default 0
+        dilution : bool, optional
+            for saving memory the plot can be the result of a sampling, by default False
+        QC : bool, optional
+            perform the quality control, by default False
+        cmap : str, optional
+            the colormap to be used 'd' for showing discreate values 'c' for continuous, by default 'd'
+        title : bool, optional
+            the title to be displayed, by default True
+        orientation : str, optional
+            the orientation of the colorbar, by default 'auto'
+        
+        Returns
+        ----------
 
-            figs : matplotlib figures
-                the created plot figures if plot is true
-            b : the total matrix
+        figs : matplotlib figures
+            the created plot figures if plot is true
+        b : the total matrix
 
-            """
+        """
         a = np.fromfile(self.path + '.total', dtype=np.uint16)
         b = 'None'
         figs = None
@@ -607,34 +607,34 @@ class ns:
             cartesian=True, absolute=False, replacewith=0,dilution=False,
             display='percentage',QC = False,cmap = 'c',title=True,
             orientation = 'auto' ):
-            """Compute the average SNR value and allows displying the SNR matrix.
-            
-            Parameters
-            ----------
-            matrix : bool, optional
-                if true reconstruct the SNR matrix, by default False
-            plot : str, optional
-                plot the reconstructed matrix, by default 'show'
-            cartesian : bool, optional
-                show the matrix using cartesian coordinate system 0,0 botttom left corner, by default True
-            absolute : bool, optional
-                use the absolute reference system of the stages, by default False
-            replacewith : int, optional
-                the value to be used instead of the missing values, by default 0
-            dilution : bool, optional
-                for saving memory the plot can be the result of a sampling, by default False
-            display : str, optional
-                shows the results as a percentage or as counts otherwise, by default 'percentage'
-            QC : bool, optional
-                perform the quality control, by default False
-            cmap : str, optional
-                the colormap to be used 'd' for showing discreate values 'c' for continuous, by default 'd'
-            title : bool, optional
-                the title to be displayed, by default True
-            orientation : str, optional
-                the orientation of the colorbar, by default 'auto'
+        """Compute the average SNR value and allows displying the SNR matrix.
+        
+        Parameters
+        ----------
+        matrix : bool, optional
+            if true reconstruct the SNR matrix, by default False
+        plot : str, optional
+            plot the reconstructed matrix, by default 'show'
+        cartesian : bool, optional
+            show the matrix using cartesian coordinate system 0,0 botttom left corner, by default True
+        absolute : bool, optional
+            use the absolute reference system of the stages, by default False
+        replacewith : int, optional
+            the value to be used instead of the missing values, by default 0
+        dilution : bool, optional
+            for saving memory the plot can be the result of a sampling, by default False
+        display : str, optional
+            shows the results as a percentage or as counts otherwise, by default 'percentage'
+        QC : bool, optional
+            perform the quality control, by default False
+        cmap : str, optional
+            the colormap to be used 'd' for showing discreate values 'c' for continuous, by default 'd'
+        title : bool, optional
+            the title to be displayed, by default True
+        orientation : str, optional
+            the orientation of the colorbar, by default 'auto'
 
-            """
+        """
 
         a = np.fromfile(self.path + '.snr', dtype=np.uint16)
         b = 'None'
@@ -1489,9 +1489,6 @@ class ns:
                 'stage_step', self.parameters.stage_step * 1000, self.lens.X_laser_Spot_Size)
         else:
             self.parameters.xlabel = '(mm)'
-
-        if self.log[
-                'Best plane correction'] != 'Not performed' and vmaxx is None and vminx is None:
   
         fig = plt.figure()
         ax = fig.add_subplot(111)
@@ -2420,8 +2417,9 @@ class ns:
         if maxz == '+3sigma':
             maxz = (np.mean(self.array) + 3 * np.std(self.array))
 
-        arrmask = np.ma.masked_outside(self.array, minz - add, maxz + add)
-        log+= ' Between %s mm and %s mm' % (round(minz, 3), round(maxz, 3))
+        if minz != None and maxz != None:
+            arrmask = np.ma.masked_outside(self.array, minz - add, maxz + add)
+            log+= ' Between %s mm and %s mm' % (round(minz, 3), round(maxz, 3))
         else:
             arrmask = self.array
 
@@ -3101,7 +3099,7 @@ class ns:
             if save:
                 self._save_plot(fig2,'%s DistVsSkKur.png' %(self.name))
                 ACD = self.plot(rectangle=rectangles, unit='micron',plot=False)
-                ACD.savefig(os.path.join(getcwd(),'Results','%s ConcentricROIPlot.png'%self.name)
+                ACD.savefig(os.path.join(getcwd(),'Results','%s ConcentricROIPlot.png'%self.name))
                 plt.close()
 
 
@@ -3193,7 +3191,7 @@ class ns:
             if save:
                 self._save_plot(fig2,'%s MarginVsSkKur.png' %(self.name))
                 ACD = self.plot(rectangle=rectangles, unit='micron',plot=False)
-                ACD.savefig(os.path.join(getcwd(),'Results','%s MarginsROIPlot.png'%self.name)
+                ACD.savefig(os.path.join(getcwd(),'Results','%s MarginsROIPlot.png'%self.name))
                 plt.close()
 
 
@@ -4019,7 +4017,7 @@ class ns:
             pass
          # Here you find the path of the template
         renderer = Renderer(os.join(tpath,"Template_new_metro%s.odt" %(metrology),
-                            locals(), '%s.odt' % (self.path))
+                            locals(), '%s.odt' % (self.path)))
         renderer.run()
         #restore original figsize
         plt.rcParams['figure.figsize'] =  originalfigsize
@@ -4429,7 +4427,7 @@ class ns:
             self._mk_results_folder()
             img.save(
                 path.join('Results','RGB composite %s pixel%s.tiff' %
-                (self.name, side))
+                (self.name, side)))
             plt.imshow(img, interpolation='nearest')
             plt.show()
             return
@@ -4720,10 +4718,10 @@ class ns:
     def _mk_results_folder(self):
         """This is an utility function that creates the folder results if does not exists
         """   
-         if not path.exists('Results'):
+        if not path.exists('Results'):
             makedirs(path.join(getcwd(),'Results'))
 
-    def _save_plot(self,fig,name),dpi=300:
+    def _save_plot(self,fig,name,dpi=300):
         """Save the plot to disk
 
         This is an utility function for saving the

@@ -3718,7 +3718,7 @@ class ns:
     def normalize_0to255(self,astype = np.uint8):
         return (255*(self.array - np.min(self.array))/np.ptp(self.array)).astype(astype)
 
-    def Segmentation(self, lato, kind=None, mfilter=True,
+    def Segmentation(self, side, kind=None, mfilter=True,
                       overwrite=False,margin=None,norm=False):
         from scipy.stats import skew, kurtosis
         if kind is None:
@@ -3741,8 +3741,8 @@ class ns:
             filteredarr=filteredarr[margin:-margin,margin:-margin]
         
         h, w = filteredarr.shape
-        restor = h % lato
-        restoc = w % lato
+        restor = h % side
+        restoc = w % side
         
         if restoc != 0 and restor != 0:
             final = filteredarr[:-restor, :-restoc]
@@ -3757,9 +3757,9 @@ class ns:
         else:
             final = filteredarr
 
-        numcolsa = final.shape[1] / lato
+        numcolsa = final.shape[1] / side
         print numcolsa
-        numrowsa = final.shape[0] / lato
+        numrowsa = final.shape[0] / side
         print numrowsa
         
         #Form here starts the segmentation
@@ -3777,11 +3777,11 @@ class ns:
                 a = np.split(
                     np.ravel(
                         np.column_stack(
-                            (final[ini:(lato * i),::]))),
+                            (final[ini:(side * i),::]))),
                     numcolsa)
                 for k in a:
                     arr.append(np.nanstd(k))
-                ini += lato
+                ini += side
            
 
         elif kind == 2:
@@ -3791,11 +3791,11 @@ class ns:
                 a = np.split(
                     np.ravel(
                         np.column_stack(
-                            (final[ini:(lato * i),::]))),
+                            (final[ini:(side * i),::]))),
                     numcolsa)
                 for k in a:
                     arr.append(skew(k))
-                ini += lato
+                ini += side
 
         elif kind == 3:
             if overwrite:
@@ -3804,24 +3804,24 @@ class ns:
                 a = np.split(
                     np.ravel(
                         np.column_stack(
-                            (final[ini:(lato * i),::]))),
+                            (final[ini:(side * i),::]))),
                     numcolsa)
                 for k in a:
                     arr.append(kurtosis(k))
-                ini += lato
+                ini += side
 
         elif kind == 4 or kind == 5:
             for i in range(1, numrowsa + 1):
                 a = np.split(
                     np.ravel(
                         np.column_stack(
-                            (final[ ini:( lato * i),::]))),
+                            (final[ ini:( side * i),::]))),
                     numcolsa)
                 for k in a:
                     R.append(np.std(k))
                     G.append(skew(k))
                     B.append(kurtosis(k))
-                ini += lato
+                ini += side
 
             R_arr = np.array(R).reshape(numrowsa, numcolsa) - np.min(R)
             G_arr = np.array(G).reshape(numrowsa, numcolsa) - np.min(G)
@@ -3849,7 +3849,7 @@ class ns:
             self._mk_results_folder()
             img.save(
                 r'Results\RGB composite %s pixel%s.tiff' %
-                (self.name, lato))
+                (self.name, side))
             plt.imshow(img, interpolation='nearest')
             plt.show()
             return
@@ -3861,12 +3861,12 @@ class ns:
                 a = np.split(
                     np.ravel(
                         np.column_stack(
-                            (final[ini:(lato * i),::]))),
+                            (final[ini:(side * i),::]))),
                     numcolsa)
                 for k in a:
                     arr.append(abs(np.nanmin(k)))
                     arr2.append(np.nanmax(k))
-                ini += lato
+                ini += side
                 
         elif kind == 7:
             #J. Europ. Opt. Soc. Rap. Public. 9, 14032 (2014)
@@ -3879,16 +3879,16 @@ class ns:
                     a = np.split(
                         np.ravel(
                             np.column_stack(
-                                (final[ini:(lato * i),::]))),
+                                (final[ini:(side * i),::]))),
                         numcolsa)
                     
                     for sub_ar in a:
-                        subarea_mat.append(sub_ar.reshape(lato,lato))
+                        subarea_mat.append(sub_ar.reshape(side,side))
                         
-            x1 = random.randint(0,lato-1)
-            y1 = random.randint(0,lato-1)
-            x2 = random.randint(0,lato-1)
-            y2 = random.randint(0,lato-1)
+            x1 = random.randint(0,side-1)
+            y1 = random.randint(0,side-1)
+            x2 = random.randint(0,side-1)
+            y2 = random.randint(0,side-1)
             
             dist_vector_r = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)*self.parameters.stage_step
             for n,ROI in enumerate(subarea_mat):            
@@ -3896,10 +3896,10 @@ class ns:
 
         
         if overwrite:
-            self.parameters.stage_step = self.parameters.stage_step * lato
+            self.parameters.stage_step = self.parameters.stage_step * side
             self.array = np.array(arr).reshape(numrowsa, numcolsa)
             self.log['Processing'] = self.log['Processing'].join(
-                'Roughness segmentation side:%s' % (lato))
+                'Roughness segmentation side:%s' % (side))
             self.parameters.numcols = self.array.shape[1]
             self.parameters.numrows = self.array.shape[0]
             if norm:
@@ -3953,7 +3953,7 @@ class ns:
             steps = range(2,maxside,step)
         for t in steps:
             scale = round(t*self.parameters.stage_step*1000,1)
-            multiseg[scale] = self.Segmentation(kind=kind,lato=t, norm = norm)
+            multiseg[scale] = self.Segmentation(kind=kind,side=t, norm = norm)
           
         
         if plot:
