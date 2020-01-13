@@ -60,7 +60,7 @@ class ns:
 
     def __init__(self, path, lens=None,init=True):
         self.path = path
-        self.name = path.split(os.sep)[-1]
+        self.name = path.split(sep)[-1]
         self.array = np.array([])
         self.missingvaluesarray = None
         self.parameters = self.parameterslist()
