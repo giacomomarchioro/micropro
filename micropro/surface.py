@@ -2243,7 +2243,7 @@ class ns:
             return result
 
     def manual_subtractplane(self, plot=False, inverted=True, dil=4,
-                             useLens = False):
+                             useLens = False,x=None,y=None):
         """Select manually a set of points to be used for fitting a plane and subtracting it
         from the distance array.
         
@@ -2257,7 +2257,11 @@ class ns:
             the dilution factor for speeding up the rendering of the plot, by default 4
         useLens : bool, optional
             if True the working range of the lenses is used for visualizing the original matrix, by default False
-        
+        x : array, optional
+            the x coordiantes of the points to be used for subtracting the plane, by default None
+        y : array, optional
+            the y coordiantes of the points to be used for subtracting the plane, by default None
+
         Returns
         -------
         np.array    
@@ -2271,8 +2275,7 @@ class ns:
         X, Y = np.meshgrid(np.arange(0, self.array.shape[1], 1),
                            np.arange(0, self.array.shape[0], 1))
 
-        x = []
-        y = []
+
         if useLens:
             vminx = self.lens.LENS_MINd
             vmaxx = self.lens.LENS_MAXd
@@ -2286,16 +2289,14 @@ class ns:
         mesh = plt.pcolormesh(self.array,vmin= vminx, vmax = vmaxx)
         ax.invert_yaxis()
 
-        def onclick(event):
-            global ix, iy
-            ix, iy = event.xdata, event.ydata
-            print('x = %d, y = %d' % (
-                ix, iy))
-            x.append(int(round(ix)))
-            y.append(int(round(iy)))
-            return ix, iy
+        if x is None and y is None:
+            while True:
+                pts = np.asarray(plt.ginput(-1, timeout=-1)).astype(int)
+                if plt.waitforbuttonpress():
+                    break
+            x = pts[:,0]
+            y = pts[:,1]
 
-        cid = fig.canvas.mpl_connect('button_press_event', onclick)
         plt.show()
         z = [self.array[i] for i in zip(y, x)]
 

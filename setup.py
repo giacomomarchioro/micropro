@@ -5,13 +5,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="micropro",
-    version="0.0.3",
+    version="0.0.4",
     author="Giacomo Marchioro",
     author_email="giacomomarchioro@outlook.com",
     description="A tool for working with microprofilometry data.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/pypa/sampleproject",
+    url="https://github.com/giacomomarchioro/micropro",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
