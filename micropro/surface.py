@@ -2265,7 +2265,7 @@ class ns:
         Returns
         -------
         np.array    
-            the results of the subtraction as a numpy array.
+            the coordiantes of the points used for the computation as a numpy array.
         """
         import scipy.linalg
         from mpl_toolkits.mplot3d import Axes3D
@@ -2327,6 +2327,7 @@ class ns:
             result = self.array - Z
         self.array = result
         self.log['Best plane correction'] = 'Done manually'
+        return pts
 
     def sigmafilter(self, sigmas=1):
         """A filter to mask values grater than a certian number of standard deviation (sigmas)
