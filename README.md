@@ -9,7 +9,7 @@ Python module for the analysis of microprofilometry data. This module was produc
   
   ```python
   from micropro import ns
-  mysurface = ns.load(path) # Create an instance for the surface
+  mysurface = ns(path/nameofthefolder/nameofthefilewithoutextension) # Create an instance for the surface
   mysurface.mfilter() # filter bad values
   mysurface.subtractplane(order=1) # fit plane and subtract it form the surface
   mysurface.plot() # plot the results
