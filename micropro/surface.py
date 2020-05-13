@@ -3501,8 +3501,9 @@ class ns:
             else:
                 mdict = {'m' +
                     self.name: self.array}
-        scipy.io.savemat(path.join('Results',self.name),
+        scipy.io.savemat(path.join('Results',self.name+'.mat'),
             mdict=mdict)
+        print("Saved %s in %s" %(self.name+'.mat',path.join(getcwd(),'Results')))
         self.savelog()
 
     def h5f_export(self, dataset=''):
