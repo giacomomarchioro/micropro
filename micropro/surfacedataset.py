@@ -15,7 +15,7 @@ from matplotlib.cm import jet, Greys
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.ticker as ticker
 from os import listdir, getcwd, path, makedirs,remove
-
+from .config import myconfig
 import time
 
 
