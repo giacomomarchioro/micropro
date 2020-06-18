@@ -115,7 +115,9 @@ class surfacedataset:
             print("Found %s dataset:" %(len(self.ID)))
             try:
                 import LabDBwrapper as Lab
-                self.dataset_infos = Lab.dataset(self.ID[0],r"C:\Users\OPdaTe\Documents\LabDatabase\SamplesDB")
+                p = myconfig['databasepath']
+                if p is not None and p != '':
+                    self.dataset_infos = Lab.dataset(self.ID[0],p)
             except ImportError:
                 "No LabWrapper found"
 
@@ -984,7 +986,7 @@ class surfacedataset:
                     data.si_unit_z = GwySIUnit(unitstr = "mm")
                 if unit == 'micron' or unit == 'um':
                     data = GwyDataField(surf.array.data.astype(np.float)*1000)
-                    data.si_unit_z = GwySIUnit(unitstr = "μm")
+                    data.si_unit_z = GwySIUnit(unitstr = "um")
                 data.si_unit_xy = GwySIUnit(unitstr = "mm")
                 data.xres = surf.array.shape[1]
                 data.yres = surf.array.shape[0]
@@ -999,7 +1001,7 @@ class surfacedataset:
                     data.si_unit_z = GwySIUnit(unitstr = "mm")
                 if unit == 'micron' or unit == 'um':
                     data = GwyDataField(surf.array.astype(np.float)*1000)
-                    data.si_unit_z = GwySIUnit(unitstr = "μm")
+                    data.si_unit_z = GwySIUnit(unitstr = "um")
                 data.xres = surf.array.shape[1]
                 data.yres = surf.array.shape[0]
                 data.xreal = surf.parameters.rangeX

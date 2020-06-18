@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="micropro",
-    version="0.0.5",
+    version="0.0.6",
     author="Giacomo Marchioro",
     author_email="giacomomarchioro@outlook.com",
     description="A tool for working with microprofilometry data.",

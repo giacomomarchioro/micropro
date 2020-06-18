@@ -12,11 +12,12 @@ from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.ticker as ticker
 from os import listdir, getcwd, path, makedirs,remove, sep
 from .lens import diclens
+from .config import myconfig
 __all__ = ['ns']
 
 class ns:
     """New surface (ns) class.
-        
+
     New surface class (ns):
     This class create an object of the micorprofilometer it allows different method
     to be used with the dot notation. The first thing to do is to create a new
@@ -106,13 +107,13 @@ class ns:
 #        newsurface.array=self.array-other.array
 #        return newsurface
     def acoustic_init(self,path=True):
-        """Loading acoustic microscopy data in mat file.    
-        
+        """Loading acoustic microscopy data in mat file.
+
         Parameters
         ----------
         path : bool, optional
             Add the current working directory to the file., by default True
-        
+
         Returns
         -------
         str
@@ -221,8 +222,10 @@ class ns:
                 self.header['PROBE_POWER'].replace(',', '.'))
             if int(self.header['JOB_ID']) != 1:
                 from LabDBwrapper import Sample
-                self.sample_infos = Sample(int(self.header['JOB_ID']),
-                                           r"C:\Users\OPdaTe\Documents\LabDatabase\SamplesDB")
+                p = myconfig['databasepath']
+                if p is not None and p != '':
+                    self.sample_infos = Sample(int(self.header['JOB_ID']),p)
+
 
         firstmeasurment = 1
         #************************************
@@ -244,8 +247,10 @@ class ns:
                 td.seconds // 3600, (td.seconds // 60) % 60, td.seconds % 60)
             if int(self.header['JOB_ID']) != 1:
                 from LabDBwrapper import Sample
-                self.sample_infos = Sample(int(self.header['JOB_ID']),
-                                           r"C:\Users\OPdaTe\Documents\LabDatabase\SamplesDB")
+                p = myconfig['databasepath']
+                if p is not None and p != '':
+                    self.sample_infos = Sample(int(self.header['JOB_ID']),p)
+
             # stage_step
             self.parameters.stage_step = float(
                 self.header['JOB_RESOLUTION_mm'].replace(',', '.'))
@@ -420,7 +425,7 @@ class ns:
             QC=False,cmap='d',title=True, orientation = 'auto'
             ):
         """Compute the average Total value and allows displaying the Total matrix.
-        
+
         Parameters
         ----------
         matrix : bool, optional
@@ -444,7 +449,7 @@ class ns:
             the title to be displayed, by default True
         orientation : str, optional
             the orientation of the colorbar, by default 'auto'
-        
+
         Returns
         ----------
 
@@ -608,7 +613,7 @@ class ns:
             display='percentage',QC = False,cmap = 'c',title=True,
             orientation = 'auto' ):
         """Compute the average SNR value and allows displying the SNR matrix.
-        
+
         Parameters
         ----------
         matrix : bool, optional
@@ -803,7 +808,7 @@ class ns:
 
     def diagnose(self, b, numcols, numrows, v=False):
         """Diagnose the reconstructed array.
-        
+
         Parameters
         ----------
         b : np.array
@@ -840,8 +845,8 @@ class ns:
 
     def checkID(self):
         """Check if the ID used is the right one, confronting the photos in the database.
-        
-        This function is part of the quality control. It requires the user to compare the data in the 
+
+        This function is part of the quality control. It requires the user to compare the data in the
         database with the data collected.
 
         Returns
@@ -891,7 +896,7 @@ class ns:
 
     def QualityControl(self,user = 'GM'):
         """Perform a quality control on the measurement.
-        
+
         This function allows to perform the quality control of the data collected. The user is asked to evaluate
         different parameters that are indicators of the quality of the scan.
         The results are stored in the self.logQC and in a separate file saved to disk QC-Passed.txt or QC-Failed.txt.
@@ -963,7 +968,7 @@ class ns:
 
     def checkmissing(self, replacewith=np.nan, repair=True, snr=False):
         """Check if any valus is missing.
-        
+
         This is an important function that should be run every time you process
         data from microprofilometer.
         The .tag file is a series of number going form 1 to 255 then starting
@@ -977,7 +982,7 @@ class ns:
         This function check if any missing value is present and if any are present
         and repair argument is set to True add a value (default is np.nan) for
         every missing measurment in the right position, and delate the last value.
-        
+
         Parameters
         ----------
         replacewith : values, optional
@@ -1072,7 +1077,7 @@ class ns:
 
     def interpolate_missing(self,method='cubic'):
         """Interpolate the missing values with different methods.
-        
+
         This method uses scipy interpolate, for computing the value where invalid values have been
         detected. Any masked values is replaced with the computed one self.mfilter() must be carried out
         before using this method. self.checkmissing() must be used before self.mfilter() for correcting
@@ -1096,7 +1101,7 @@ class ns:
                                   self.array[~self.array.mask].ravel(),
                                   (xx, yy),
                                    method=method)
-    
+
     def savelog(self):
         """It saves the log in a .txt files.
         """
@@ -1124,7 +1129,7 @@ class ns:
             dilution=False, title = True, cm = None, QC = False ,
             orientation = 'auto',show_ROIs=False):
         """plot the array of distances as color coded map.
-        
+
         This is the main function to plot the results. It handle most of the
         expeption and try to plot all the information about Lens and other
         parameters. So it will automatically see if a lens is present to retrive
@@ -1173,7 +1178,7 @@ class ns:
             depending on the aspect ratio, by default 'auto'
         show_ROIs : bool, optional
             shows the ROIs found as a set of rectangles., by default False
-        
+
         Returns
         -------
         matplotlib.plt
@@ -1446,7 +1451,7 @@ class ns:
     def profile_plot(self, col=None,row=None, start =None, stop =None, unit='mm', absolute=False,mode=False,
                      plot=True,save=False, title = True):
         """plot a single profile form the distances array.
-        
+
         Parameters
         ----------
         col : int, optional
@@ -1470,7 +1475,7 @@ class ns:
 
         Returns
         -------
-        matplotlib.plt  
+        matplotlib.plt
             the matplotlib plot object
         """
         if col != None and row == None:
@@ -1489,7 +1494,7 @@ class ns:
                 'stage_step', self.parameters.stage_step * 1000, self.lens.X_laser_Spot_Size)
         else:
             self.parameters.xlabel = '(mm)'
-  
+
         fig = plt.figure()
         ax = fig.add_subplot(111)
 
@@ -1542,7 +1547,7 @@ class ns:
                        axes=True,colorbar=True,unit='mm',
                        cbarorientation='vertical'):
         """3D plot of the distances array with enached distances z (not in scale).
-        
+
         This function uses myavi library for producing a 3D plot of the distances array.
 
         Parameters
@@ -1561,7 +1566,7 @@ class ns:
             the unit of the colobar ('mm' or 'microns'), by default 'mm'
         cbarorientation : str, optional
             The orientation of the colorbar ('vertical' or 'horizontal'), by default 'vertical'
-        
+
         Returns
         -------
         mlab
@@ -1621,12 +1626,12 @@ class ns:
             to the mesh.
         save : bool, optional
             if True the resultin plot is saved to disk.
-        
+
         Returns
         -------
         mlab
             mayavi mlab object
-        
+
         """
         if array == 'array':
             array = np.fliplr(self.array.copy())
@@ -1681,8 +1686,8 @@ class ns:
     def tredplot(self, arr=None, stride='auto', plot=True,
                  title='3D Plot',zprop=True,cm ='cw'):
         """3D plot of the distance array using matplotlib.
-        
-        This function uses matplotlib for producing a 3D plot of the distances array. 
+
+        This function uses matplotlib for producing a 3D plot of the distances array.
         Matplotlib is slower compared to Mayavi hence is preferable to use self.tredplotmayavimesh.
 
         Parameters
@@ -1699,7 +1704,7 @@ class ns:
             proportion of the z axis if True the aspect ratio of the axes is preserved, by default True
         cm : str, optional
             The colormar used for the colorbar, by default 'cw'
-        
+
         Returns
         -------
         matploltlib.plt
@@ -1789,7 +1794,7 @@ class ns:
 
     def delcol(self, v=False, col2remove=-1):
         """Deletes columns form the array
-        
+
         It takes the name of the output file form the profilometer. It returns
         an array with the data rearranged. Deleting the last number of the row,
         this can solve the issue of misalingment of the rows.
@@ -1836,23 +1841,23 @@ class ns:
                      method = "cv2.TM_CCORR_NORMED",
                      plot = True
                      ):
-        """Detect the corners of a rectangular sample 
-        
-        This method uses OpenCV template matching algorithms for finding the corners of the samples. 
+        """Detect the corners of a rectangular sample
+
+        This method uses OpenCV template matching algorithms for finding the corners of the samples.
         The coordinates of the corners are stored in self.corners.
         For performing the template matching the mask array is used by default, the user must acquire the sample
         so that the background will be filtered by the self.mfilter function.
-        For templates are created representing the corners of the sample. 
-        Before using the template matching algorithm a morphological open and closed is performed for improving the results 
-        of the matching. 
-        For improving the performance, the original surface can be devide in four region, each region 
-        containing a corner so that the template matching can be performed only on the region where the 
+        For templates are created representing the corners of the sample.
+        Before using the template matching algorithm a morphological open and closed is performed for improving the results
+        of the matching.
+        For improving the performance, the original surface can be devide in four region, each region
+        containing a corner so that the template matching can be performed only on the region where the
         corner should be found. In this case the sample must be centered at least approximately.
 
         Parameters
         ----------
         data : np.array, optional
-            the array to be used for performing the corner detection by default is used the mask of the 
+            the array to be used for performing the corner detection by default is used the mask of the
             measurment that shows good corners if the sample is in range and the background is out of range, by default 'mask'
         w : int, optional
             width of the templated to be used for corner detection, by default 100
@@ -1870,7 +1875,7 @@ class ns:
             The method used for computing the score of the matching of the template, by default "cv2.TM_CCORR_NORMED"
         plot : bool, optional
             if Ture a plot of the results is shown at the end, by default True
-        
+
         Raises
         ------
         Warning
@@ -1998,8 +2003,8 @@ class ns:
     def centroid_cor(self):
         '''Correction of the centroids
         This function re-align the centroids and create a new matrix.
-        When the probe is acquiring in dynamic mode  it acquires signal 
-        while is running. If a snake pattern is used mantaining the same  starting 
+        When the probe is acquiring in dynamic mode  it acquires signal
+        while is running. If a snake pattern is used mantaining the same  starting
         and ending point for each row or column the real center of the area that has
         been analyzed by the laser is  shifted toward the scanning direction
         of a distance that we call integration distance (see fig. a.).
@@ -2068,7 +2073,7 @@ class ns:
             returncalculated_plane= False
             ):
         """Subtract a plane from the array of distances.
-        
+
 
         See https://gist.github.com/amroamroamro/1db8d69b4b65e8bc66a6
         for further documentation.
@@ -2096,14 +2101,14 @@ class ns:
             if True the function is used for assesing the quality of the measurment, by default False
         returncalculated_plane : bool, optional
             if True the calculated plane is returned, by default False
-        
+
         Returns
         -------
         np.array
-            returns the distance matrix after the subtraction or the reference plane calculated (if 
+            returns the distance matrix after the subtraction or the reference plane calculated (if
             returncalculated_plane is True.)
         """
-       
+
         import scipy.linalg
         from mpl_toolkits.mplot3d import Axes3D
         overwrite=False
@@ -2246,7 +2251,7 @@ class ns:
                              useLens = False,x=None,y=None):
         """Select manually a set of points to be used for fitting a plane and subtracting it
         from the distance array.
-        
+
         Parameters
         ----------
         plot : bool, optional
@@ -2264,7 +2269,7 @@ class ns:
 
         Returns
         -------
-        np.array    
+        np.array
             the coordiantes of the points used for the computation as a numpy array.
         """
         import scipy.linalg
@@ -2331,7 +2336,7 @@ class ns:
 
     def sigmafilter(self, sigmas=1):
         """A filter to mask values grater than a certian number of standard deviation (sigmas)
-        
+
         Parameters
         ----------
         sigmas : int, optional
@@ -2356,7 +2361,7 @@ class ns:
             total='optimal',
             snrs=512):
         """Mask filter apply a mask to the values that don't meet some quality criteria.
-        
+
         This is the mask filter that can be used to avoid bad values to be take into
         calulation it affects function as subtract bestplane, and plot every
         numpy function used will not take in account the masked value.
@@ -2385,7 +2390,7 @@ class ns:
             can be used for setting the threshold for the total filtering ('aceptable' or 'optimal'), by default 'optimal'
         snrs : int, optional
             the threshold for the SNR filter, by default 512
-        
+
         Returns
         -------
         [type]
@@ -2477,9 +2482,9 @@ class ns:
             plot=True,
             title=True):
         """Plot the Amplitude Distribution function
-        
+
         This function shows the distribution of heights as an histogram.
-        This is called Amplitude Distribution function. The vertical lines 
+        This is called Amplitude Distribution function. The vertical lines
         represent the working range of the probe if the lens object is available.
 
         Parameters
@@ -2493,7 +2498,7 @@ class ns:
         auto : bool, optional
             finde automatically the min and max value of the x axis, by default True
         vlines : bool, optional
-            if true vertical lines representing the working range if lens object is 
+            if true vertical lines representing the working range if lens object is
             available are shown, by default True
         shift : int, optional
             the shifting of the vertical lines, by default 0
@@ -2501,7 +2506,7 @@ class ns:
             if Ture the plot is shown, by default True
         title : bool, optional
             the title of the plot, by default True
-        
+
         Returns
         -------
         matplotlib.pyplot object
@@ -2603,11 +2608,11 @@ class ns:
     def timing_diagram(self, xlim='auto', plot=True):
         """Test and plot the timing diagram of the CCD and the axis trigger
 
-        This function uses the axis velocity and the stage step for calculating 
+        This function uses the axis velocity and the stage step for calculating
         the trigger frequency. It is mandatory for calculating the exposure lenght.
-        Eventually, it is possible to plot the timing diagram, for comparing 
+        Eventually, it is possible to plot the timing diagram, for comparing
         the frequency of the trigger with the frequency of the CCD of the probe.
-        Note that if the frequency of the trigger is not a multiple of the 
+        Note that if the frequency of the trigger is not a multiple of the
         frequency of the CCD the probe might lose many measuremets, resulting in a
         high number of missing values.
 
@@ -2617,7 +2622,7 @@ class ns:
             the limit of the x axis, by default 'auto'
         plot : bool, optional
             if True the plot is shown, by default True
-        
+
         Returns
         -------
         matplotlib.pyplot
@@ -2662,8 +2667,8 @@ class ns:
             shifterror=False,
             plot=True):
         """Plots an estimation of the spot irradiate by the laser and the pattern.
-        
-        This function gives you an insight on the resolution, when performing 
+
+        This function gives you an insight on the resolution, when performing
         acquisition in dynamic mode. It shows you the
         dimension of the laser spot size its initial and final postions, and
         the space that the laser has been moving while recording the line.
@@ -2840,17 +2845,17 @@ class ns:
                               suffix='_ROI',
                               ):
         """Select interactively a regions of interest it the acquisition.
-        
+
         Parameters
         ----------
         scalingfactor : int, optional
-            the scalingfactor is used when the whole acquisition can not be plot 
+            the scalingfactor is used when the whole acquisition can not be plot
             due to memory limitations, by default 1
         useSNR : bool, optional
             instead of showing the distances matrix is uses the SNR matrix, the ROI will be however taken
             from the distance matrix, by default False
         save : str, optional
-            if 'ROI' the ROI are save in self.ROI if 'overwrite' in self.array if 
+            if 'ROI' the ROI are save in self.ROI if 'overwrite' in self.array if
             'indexes' only the indexes are saved, by default 'ROI'
         suffix : str, optional
             the suffix to be used when saving the ROI, by default '_ROI'
@@ -2938,16 +2943,16 @@ class ns:
 
     def crop(self,y1,y2,x1,x2,copy=False,suffix=False):
         """Crop acquisition and recompute the acquisition dimension
-        
+
         This is a better approach for cropping the array. It allows
-        the creation of new ns object with deep copying using the 
+        the creation of new ns object with deep copying using the
         copy arguments.
 
         After the cropping, it recalculates:
-        surf.parameters.numcols 
-        surf.parameters.numrows 
-        surf.parameters.rangeX 
-        surf.parameters.rangeY 
+        surf.parameters.numcols
+        surf.parameters.numrows
+        surf.parameters.rangeX
+        surf.parameters.rangeY
 
         Parameters
         ----------
@@ -2963,10 +2968,10 @@ class ns:
             if True the cropo does not overwrite self.array, by default False
         suffix : str, optional
             the suffix to be appended to the self.name, by default False
-        
+
         Returns
         -------
-        ns instace    
+        ns instace
             if copy=True it return a surface object ns mantaining the oringal.
         """
 
@@ -2990,9 +2995,9 @@ class ns:
 
     def crop_concentric_ROI(self,square_high__mm=1, usecorners = False,corner = 'TL'):
         """Crop a region of interest centered on the accquisition.
-        
+
         This method can be used for cropping the scan to get a square region of interest.
-        It finds the center of the acquisition and crop a square with the side equal to 
+        It finds the center of the acquisition and crop a square with the side equal to
         square_high_mm.
         If usecroners==True it uses the coreners detected using self.cornersdetector.
 
@@ -3038,8 +3043,8 @@ class ns:
          and compute metrological parameters for each iteration increases
          the side of the ROI by 2*step*i.
 
-         This procedure is helpful for understanding the homogeneity of the ROI. 
-        
+         This procedure is helpful for understanding the homogeneity of the ROI.
+
         Parameters
         ----------
         step : int, optional
@@ -3048,7 +3053,7 @@ class ns:
             if 'show' the resulting plot is show, by default 'show'
         save : bool, optional
             if True the results are saved, by default False
-        
+
         Returns
         -------
         tuple
@@ -3110,7 +3115,7 @@ class ns:
 
     def margin_ROI(self,step=20,plot='show',save=False):
         """Compute metrological paramters excluding an increasing portion of the margin
-        
+
         This method is analogues to self.concentric_ROI but it does not require the sample to be
         squared. For each iteration excludes a greater boarder from the commputation starting from
         the a margin excluding the value assigne to the variable *step* and increasing the margin of
@@ -3124,11 +3129,11 @@ class ns:
             if 'show' a plot showin the procedure is shown at the end, by default 'show'
         save : bool, optional
             if True the results are save to file, by default False
-        
+
         Returns
         -------
         tuple
-            a tuple containing four lists with the value computed for each iteration 
+            a tuple containing four lists with the value computed for each iteration
             margin, Sq, Rskw, Rkurt.
         """
         from scipy.stats.mstats import skew, kurtosis
@@ -3202,7 +3207,7 @@ class ns:
 
     def calculate_profile_metrology(self,profile=None,roundx=3):
         """Calculates some amplituted metrology parameters for a profile.
-        
+
         This function was meant to be used for computing the surface metrolgoy
         parameters for the profiles using a discrete aproximation.
 
@@ -3217,7 +3222,7 @@ class ns:
         Returns
         -------
         dict
-            a dictionary structured as followed 
+            a dictionary structured as followed
             {'Rz':Rz, 'Rv':Rv, 'Rt':Rt, 'Ra':Ra, 'Rp':Rp, 'Rq':Rq,
                         'Rsk':Rsk, 'Rku':Rku, 'Rc':Rc}
         """
@@ -3301,11 +3306,11 @@ class ns:
     def calculate_area_metrology(self,ROI=None,roundx=3,
                                  margin=None,subtractplane = False):
         """Calculates area metrology parameters.
-        
+
         Parameters
         ----------
         ROI : [type], optional
-            uses the indexes of in the list for selecting a region of interest 
+            uses the indexes of in the list for selecting a region of interest
             data=self.array[ROI[0]:ROI[1],ROI[2]:ROI[3]], by default None
         roundx : int, optional
             [description], by default 3
@@ -3314,12 +3319,12 @@ class ns:
         subtractplane : bool, optional
             if True a plane subtraction is performed on the data (useful if we are using a ROI)
             and we did not subtract the plane before, by default False
-        
+
         Returns
         -------
         dict
-            a dictionary structured as followed 
-            dicmetrology = {'Sz_microns':Sz, 'Sv_microns':Sv, 'St_microns':St, 
+            a dictionary structured as followed
+            dicmetrology = {'Sz_microns':Sz, 'Sv_microns':Sv, 'St_microns':St,
             'Sar_microns':Sar, 'Sp_microns':Sp, 'Sq_microns':Sq,
                         'Ssk':Ssk, 'Sku':Sku, 'Sa_microns':Sa}
         """
@@ -3420,7 +3425,7 @@ class ns:
         self.subtractplane()
         self.plot()
 
-#♣Exporting tools.
+# Exporting tools.
     def GEOTIFF(self):
         """ Export the data in GEOTIFF using gdal
 
@@ -3482,7 +3487,7 @@ class ns:
 
     def mat_export(self, mdict = None, savemask =False):
         """Export in .mat format.
-        
+
         Parameters
         ----------
         mdict : dict, optional
@@ -3508,7 +3513,7 @@ class ns:
 
     def h5f_export(self, dataset=''):
         """Export in .hdf5 format
-        
+
         Parameters
         ----------
         dataset : str, optional
@@ -3523,7 +3528,7 @@ class ns:
 
     def gwy_export(self,unit = "mm"):
         """Export the data using gwyfile module for Gwiddion
-        
+
         Parameters
         ----------
         unit : str, optional
@@ -3837,7 +3842,7 @@ class ns:
 
     def exp_appyreport(self, tpath, metrology=3,flipyax=None):
         """Export a report in odt if a tempalte is available
-        
+
         Parameters
         ----------
         tpath: str,
@@ -4028,7 +4033,7 @@ class ns:
 
     def viewer(self, absolute=False,complete=True):
         """A viewr based on PythonQwt
-        
+
         Based on https://pypi.python.org/pypi/guiqwt this
         viewer allows to inspect the data.
 
@@ -4038,13 +4043,13 @@ class ns:
             if True absolute coordante systems is used, by default False
         complete : bool, optional
             if Ture also SNR and Total are loaded, by default True
-        
+
         Returns
         -------
         win
             a PythonQwt object
         """
-        # Based on PythonQwt 
+        # Based on PythonQwt
 
         sx = 0
         sy = 0
@@ -4262,12 +4267,12 @@ class ns:
 
     def normalize_0to255(self,astype = np.uint8):
         """Normalize the data to the range 0-255
-        
+
         Parameters
         ----------
         astype : type, optional
             the type of the new data, by default np.uint8
-        
+
         Returns
         -------
         np.array
@@ -4276,9 +4281,9 @@ class ns:
         return (255*(self.array - np.min(self.array))/np.ptp(self.array)).astype(astype)
 
     def Segmentation(self, side, kind=None, mfilter=True,
-                      overwrite=False,margin=None,norm=False): 
+                      overwrite=False,margin=None,norm=False):
         """Divides the scan in squeres with equal side and compute metrological parameters for each squere.
-        
+
         Parameters
         ----------
         side : int
@@ -4295,7 +4300,7 @@ class ns:
             the margins to be exclueded from the computation in number of measurments, by default None
         norm : bool, optional
             if True the results is divided by the mean if 'to1' is also normalized to 1, by default False
-        
+
         Returns
         -------
         np.array
@@ -4507,11 +4512,11 @@ class ns:
                            ylim = None,
                            norm = False
                            ):
-        """Divides the scan area in contiguous squares of increasing area 
+        """Divides the scan area in contiguous squares of increasing area
         and compute metrological parameters for each step
 
         This function iterates self.Segmentation for square of different side
-        the computation carried out for each square is the same of 
+        the computation carried out for each square is the same of
         self.Segmentation.
         1 - Std. Deviation Roughness
         2 - Skewness
@@ -4520,7 +4525,7 @@ class ns:
         The multi-scale roughness analyses and modeling of abrasion with the grit
         size effect on ground surfaces.
         Wear 286-287 (2012) 124-135  Maxence Bigerelle et al.
-  
+
         Parameters
         ----------
         kind : int
@@ -4537,7 +4542,7 @@ class ns:
             the ylim of the plot, by default None
         norm : bool, optional
             if Ture the results are divided by the mean if 'to1' are also normalized to 1, by default False
-        
+
         Returns
         -------
         dict
@@ -4720,7 +4725,7 @@ class ns:
 
     def _mk_results_folder(self):
         """This is an utility function that creates the folder results if does not exists
-        """   
+        """
         if not path.exists('Results'):
             makedirs(path.join(getcwd(),'Results'))
 
@@ -4729,7 +4734,7 @@ class ns:
 
         This is an utility function for saving the
         plot to disk.
-        
+
         Parameters
         ----------
         fig : fig
