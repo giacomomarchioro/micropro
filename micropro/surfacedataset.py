@@ -1061,10 +1061,17 @@ class surfacedataset:
             if i.corners["TL"] != None and i.corners["BR"] != None:
                 print("Inside corner mat")
                 #create a croner matrix
+                if i.corners["Rotation"] != None:
+                    if rotation == 2:
+                        sh = np.array(i.array.shape)
+                        i.corners["TR"] = sh - np.array(i.corners['BL'])
+                        i.corners["TL"] = sh - np.array(i.corners['BR'])
+                        i.corners["BR"] = sh - np.array(i.corners['TL'])
+                        i.corners["BL"] = sh - np.array(i.corners['TR'])
                 corners_mat = np.array([[i.corners["TL"],i.corners["TR"]],
                                        [i.corners["BL"],i.corners["BR"]]])
-                if i.corners["Rotation"] != None:
-                    corners_mat = np.rot90(corners_mat,rotation)
+
+
 
             if kind == 'minimal':
                 # Create new dataset for every surface
