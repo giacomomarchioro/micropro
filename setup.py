@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="micropro",
-    version="0.0.7",
+    version="0.0.8",
     author="Giacomo Marchioro",
     author_email="giacomomarchioro@outlook.com",
     description="A tool for working with microprofilometry data.",
@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/giacomomarchioro/micropro",
     packages=setuptools.find_packages(),
-    data_files=[('config', ['config.json'])],
+    data_files=[('', ['config.json'])],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
