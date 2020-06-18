@@ -1093,7 +1093,7 @@ class surfacedataset:
                 datset.attrs['REPEATABILITY'] = float(i.lens.Repeatability)
                 datset.attrs['X_LASER_SPOT_SIZE'] = float(
                     i.lens.X_laser_Spot_Size)
-                if corners_mat != None:
+                if corners_mat.all() !=  None:
                     yi = np.min([corners_mat[0][0][1],
                                  corners_mat[0][1][1]])
                     yf = np.max([corners_mat[1][0][1],
