@@ -5,3 +5,4 @@ micropro\.egg-info/
 
 *.pyc
 *.bac
+config.json
