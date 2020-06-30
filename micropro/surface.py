@@ -2301,7 +2301,8 @@ class ns:
                     break
             x = pts[:,0]
             y = pts[:,1]
-
+        else:
+            pts = zip(x,y)
         plt.show()
         z = [self.array[i] for i in zip(y, x)]
 
