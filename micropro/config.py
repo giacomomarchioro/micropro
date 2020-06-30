@@ -6,11 +6,15 @@ print(configfile)
 if hasattr(__builtins__, 'raw_input'):
     input = raw_input
 
+
 if os.path.exists(configfile):
     with open(configfile, 'r') as f:
         myconfig = json.load(f)
 
 else:
+    myconfig = {}
+
+def link_database():
     with open(configfile, 'wb') as f:
         myconfig = {}
         myconfig['databasepath'] = input(("Specify the database"
