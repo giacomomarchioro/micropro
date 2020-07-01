@@ -1157,6 +1157,7 @@ class surfacedataset:
                         i.log['supplementary rows'])
                     DATA.attrs['supplementary columns'] = int(
                         i.log['supplementary columns'])
+                    DATA.attrs['detected_corners'] = corners_mat
                     snr_data = i.SNR(
                             matrix=True,
                             plot=False)[1]
@@ -1177,6 +1178,7 @@ class surfacedataset:
                                      corners_mat[1][0][0]])
                         xf = np.max([corners_mat[0][1][0],
                                      corners_mat[1][1][0]])
+                        print(yi,yf,xi,xf)
                         DATA.attrs['ROI'] = DATA.regionref[yi:yf,xi:xf]
                         SNR.attrs['ROI'] = SNR.regionref[yi:yf,xi:xf]
 
