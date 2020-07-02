@@ -225,6 +225,10 @@ class ns:
                 p = myconfig['databasepath']
                 if p is not None and p != '':
                     self.sample_infos = Sample(int(self.header['JOB_ID']),p)
+            self.parameters.finepower = float(
+                self.header['PROBE_FINEPOWER'].replace(',', '.'))
+            self.parameters.coursepower = float(
+                self.header['PROBE_COURSEPOWER'].replace(',', '.'))
 
 
         firstmeasurment = 1
@@ -417,7 +421,15 @@ class ns:
             b = arr.reshape(-1, self.parameters.numcols)
         self.array = b
 
-
+        time = (self.parameters.rangeX) / float(self.parameters.X_axis_vel)
+        Freq = self.parameters.numcols / time
+        Freq2 = 1 / (self.parameters.stage_step /
+                     float(self.parameters.X_axis_vel))  # using velocity
+        print('Freq. from column:', Freq, 'Frq.:', Freq2, 'CCD:', self.parameters.CCDfreq)
+        integrationdistance__mm = (
+            1 / self.parameters.CCDfreq) * float(self.parameters.X_axis_vel)
+        real_x_resolution = integrationdistance__mm * 1000 + self.lens.X_laser_Spot_Size
+        self.log['Calculated spot diameter'] = real_x_resolution
 
 
     def Total(self, matrix=False, plot='show',
@@ -2638,6 +2650,7 @@ class ns:
         integrationdistance__mm = (
             1 / self.parameters.CCDfreq) * float(self.parameters.X_axis_vel)
         real_x_resolution = integrationdistance__mm * 1000 + self.lens.X_laser_Spot_Size
+        self.log['Calculated spot diameter'] = real_x_resolution
         print('Integration distance: %s mm Signal averaged area: %s micron' % (integrationdistance__mm, real_x_resolution))
         if Freq2 > 3000:
             print("Trigger frequency too high!")
@@ -2654,7 +2667,6 @@ class ns:
             y_offset += 1.5
         plt.yticks(np.arange(0.5, y_offset, 1.5), names)
         plt.ylim(-0.2, y_offset)
-        self.log['Calculated spot diameter'] = real_x_resolution
         if plot:
             plt.show()
         else:

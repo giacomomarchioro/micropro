@@ -1058,16 +1058,22 @@ class surfacedataset:
         for i in sorted(diz, key= diz.get):
             print(i.name)
             corners_mat = np.array([None,None])
-            if i.corners["TL"] != None and i.corners["BR"] != None:
-                print("Inside corner mat")
+            if i.corners["TL"] is not None and i.corners["BR"] is not None:
+
                 #create a croner matrix
                 if i.corners["Rotation"] != None:
                     if rotation == 2:
-                        sh = np.array(i.array.shape)
-                        i.corners["TR"] = sh - np.array(i.corners['BL'])
-                        i.corners["TL"] = sh - np.array(i.corners['BR'])
-                        i.corners["BR"] = sh - np.array(i.corners['TL'])
-                        i.corners["BL"] = sh - np.array(i.corners['TR'])
+                        print("Rotating the sample")
+                        sh = np.array(i.array.shape)[::-1]
+                        cor = i.corners.copy()
+                        i.corners["TR"] = sh - np.array(cor['BL']
+                        i.corners["TR"][i.corners["TR"]<0] = 0
+                        i.corners["TL"] = sh - np.array(cor['BR'])
+                        i.corners["TL"][i.corners["TL"]<0] = 0
+                        i.corners["BR"] = sh - np.array(cor['TL'])
+                        i.corners["BR"][i.corners["BR"]<0] = 0
+                        i.corners["BL"] = sh - np.array(cor['TR'])
+                        i.corners["BL"][i.corners["BL"]<0] = 0
                 corners_mat = np.array([[i.corners["TL"],i.corners["TR"]],
                                        [i.corners["BL"],i.corners["BR"]]])
 
@@ -1989,7 +1995,7 @@ class surfacedataset:
            f.write(r"\\"+n)
            f.write(r"\hline"+n)
            for i in body: f.write(i+n)
-           for b in self.surfaces:
+           for b in sorted(diz, key= diz.get):
                #Fore each sample
                 if b.sample_infos is not None:
                     description = b.sample_infos.description
