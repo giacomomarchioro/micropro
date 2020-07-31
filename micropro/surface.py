@@ -221,10 +221,13 @@ class ns:
             self.parameters.laserpower = int(
                 self.header['PROBE_POWER'].replace(',', '.'))
             if int(self.header['JOB_ID']) != 1:
-                from LabDBwrapper import Sample
-                p = myconfig['databasepath']
-                if p is not None and p != '':
-                    self.sample_infos = Sample(int(self.header['JOB_ID']),p)
+                try:
+                    from LabDBwrapper import Sample
+                    p = myconfig['databasepath']
+                    if p is not None and p != '':
+                        self.sample_infos = Sample(int(self.header['JOB_ID']),p)
+                except ImportError:
+                    print("No labDB wrapper found.")
             self.parameters.finepower = float(
                 self.header['PROBE_FINEPOWER'].replace(',', '.'))
             self.parameters.coursepower = float(
@@ -250,10 +253,13 @@ class ns:
             self.parameters.time['duration'] =  '%s:%s:%s' % (
                 td.seconds // 3600, (td.seconds // 60) % 60, td.seconds % 60)
             if int(self.header['JOB_ID']) != 1:
-                from LabDBwrapper import Sample
-                p = myconfig['databasepath']
-                if p is not None and p != '':
-                    self.sample_infos = Sample(int(self.header['JOB_ID']),p)
+                try:
+                    from LabDBwrapper import Sample
+                    p = myconfig['databasepath']
+                    if p is not None and p != '':
+                        self.sample_infos = Sample(int(self.header['JOB_ID']),p)
+                except ImportError:
+                    print("No LabDB wrapper found")
 
             # stage_step
             self.parameters.stage_step = float(
