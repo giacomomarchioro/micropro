@@ -3,6 +3,7 @@ Spyder Editor
 This is a script to elaborate data form ths profilometer.
 """
 from __future__ import print_function
+from __future__ import division 
 if hasattr(__builtins__, 'raw_input'):
     input = raw_input
 # Python 2.7 backward compatibility -end
@@ -3046,7 +3047,7 @@ class ns:
                     return
 
         else:
-            ycent, xcent = np.array(self.array.shape)/2[0]
+            ycent, xcent = np.array(self.array.shape)//2
 
         self.array = self.array[ycent-pts:ycent+pts,
                                 xcent-pts:xcent+pts]
@@ -3080,7 +3081,7 @@ class ns:
             Rskw, Rkurt
         """
         from scipy.stats.mstats import skew, kurtosis
-        ycent, xcent = np.array(self.array.shape)/2
+        ycent, xcent = np.array(self.array.shape)//2
         distancefromcenter = []
         Sq=[]
         Rskw=[]
