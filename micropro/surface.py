@@ -4362,9 +4362,9 @@ class ns:
         else:
             final = filteredarr
 
-        numcolsa = final.shape[1] / side
+        numcolsa = int(final.shape[1] / side)
         print(numcolsa)
-        numrowsa = final.shape[0] / side
+        numrowsa = int(final.shape[0] / side)
         print(numrowsa)
 
         #Form here starts the segmentation
