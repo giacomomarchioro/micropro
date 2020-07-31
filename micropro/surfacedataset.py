@@ -1066,7 +1066,7 @@ class surfacedataset:
                         print("Rotating the sample")
                         sh = np.array(i.array.shape)[::-1]
                         cor = i.corners.copy()
-                        i.corners["TR"] = sh - np.array(cor['BL']
+                        i.corners["TR"] = sh - np.array(cor['BL'])
                         i.corners["TR"][i.corners["TR"]<0] = 0
                         i.corners["TL"] = sh - np.array(cor['BR'])
                         i.corners["TL"][i.corners["TL"]<0] = 0
