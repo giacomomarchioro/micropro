@@ -2078,7 +2078,6 @@ class ns:
         ax2.plot(Xc[0], self.array[0], 'o', color='r', label='original')
         ax2.legend()
 
-    @staticmethod
     def subtractplane(
             self,
             plot=False,
