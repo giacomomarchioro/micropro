@@ -1465,7 +1465,7 @@ class ns:
         if plot:
             plt.show()
         else:
-            return plt
+            return fig,ax
 
     def profile_plot(self, col=None,row=None, start =None, stop =None, unit='mm', absolute=False,mode=False,
                      plot=True,save=False, title = True):
