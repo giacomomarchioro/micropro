@@ -683,9 +683,9 @@ class ns:
                 for i, j in zip(b1, self.missingvaluesarray):
                     leng = np.count_nonzero(j)
                     indexes = np.nonzero(j)
-                    todelete = indexes[0][-leng / 2:]
+                    todelete = indexes[0][-leng // 2:]
                     corr = np.delete(i, todelete)
-                    toinsert = indexes[0][:-leng / 2]
+                    toinsert = indexes[0][:-leng // 2]
                     for d in toinsert:
                         corr = np.insert(corr, d, replacewith)
 
@@ -1939,17 +1939,17 @@ class ns:
             # only in the are wher it should be
             if subdivide:
                 if j == 'TL':
-                    img = img[:hz/2,:wz/2]
+                    img = img[:hz//2,:wz//2]
                 if j == 'TR':
-                    wp = wz/2
-                    img = img[:hz/2,wz/2:]
+                    wp = wz//2
+                    img = img[:hz//2,wz//2:]
                 if j == 'BL':
-                    hp = hz/2
-                    img = img[hz/2:,:wz/2]
+                    hp = hz//2
+                    img = img[hz//2:,:wz//2]
                 if j == 'BR':
-                    wp = wz/2
-                    hp = hz/2
-                    img = img[hz/2:,wz/2:]
+                    wp = wz//2
+                    hp = hz//2
+                    img = img[hz//2:,wz//2:]
             template = templates[j]
             # Apply template Matching
             method2 = eval(method)
@@ -1962,8 +1962,8 @@ class ns:
             else:
                 top_left = max_loc
 
-            corner = (top_left[0] + w/2 -pad_width + wp,
-                      top_left[1] + h/2 -pad_width + hp)
+            corner = (int(top_left[0] + w//2 -pad_width + wp),
+                      int(top_left[1] + h//2 -pad_width + hp))
             self.corners[j] = corner
             corners.append(corner)
 
@@ -3034,10 +3034,10 @@ class ns:
         pts = int(round(square_high__mm/self.parameters.stage_step/2,0))
         if usecorners:
                 if self.corners[corner] != None:
-                    x1 = (self.corners['TL'][0] + self.corners['BL'][0])/2.
-                    x2 = (self.corners['TR'][0] + self.corners['BR'][0])/2.
-                    y1 = (self.corners['TL'][1] + self.corners['TR'][1])/2.
-                    y2 = (self.corners['BL'][1] + self.corners['BR'][1])/2.
+                    x1 = (self.corners['TL'][0] + self.corners['BL'][0])//2
+                    x2 = (self.corners['TR'][0] + self.corners['BR'][0])//2
+                    y1 = (self.corners['TL'][1] + self.corners['TR'][1])//2
+                    y2 = (self.corners['BL'][1] + self.corners['BR'][1])//2
 
                     xcent = int(round((x2 - x1)/2 + x1,0))
                     ycent = int(round((y2 - y1)/2 + y1,0))

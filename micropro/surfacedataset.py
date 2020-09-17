@@ -1115,7 +1115,7 @@ class surfacedataset:
                                  corners_mat[1][0][0]])
                     xf = np.max([corners_mat[0][1][0],
                                  corners_mat[1][1][0]])
-                    dataset.attrs['ROI'] = datset.regionref[yi:yf,xi:xf]
+                    datset.attrs['ROI'] = datset.regionref[yi:yf,xi:xf]
 
             else:
                 # create a new group for every surface
