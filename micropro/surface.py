@@ -1914,10 +1914,10 @@ class ns:
         t_TL = template.copy()
         t_BR = template.copy()
         t_BL = template.copy()
-        t_TL[h/2:,w/2:] = 0 #Top right
-        t_TR[h/2:,:w/2] = 0 #Top left
-        t_BL[:h/2,w/2:] = 0 # Bottom right
-        t_BR[:h/2,:w/2] = 0 #Bottom left
+        t_TL[h//2:,w//2:] = 0 #Top right
+        t_TR[h//2:,:w//2] = 0 #Top left
+        t_BL[:h//2,w//2:] = 0 # Bottom right
+        t_BR[:h//2,:w//2] = 0 #Bottom left
 
         templates = {"TR":t_TR, "TL":t_TL,"BR": t_BR,"BL": t_BL}
 
@@ -3051,10 +3051,10 @@ class ns:
 
         self.array = self.array[ycent-pts:ycent+pts,
                                 xcent-pts:xcent+pts]
-        surf.parameters.numcols = y2-y1
-        surf.parameters.numrows = x2-x1
-        surf.parameters.rangeX = square_high__mm
-        surf.parameters.rangeY = square_high__mm
+        self.parameters.numcols = y2-y1
+        self.parameters.numrows = x2-x1
+        self.parameters.rangeX = square_high__mm
+        self.parameters.rangeY = square_high__mm
 
 
 
