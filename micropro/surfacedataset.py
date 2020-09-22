@@ -1106,7 +1106,7 @@ class surfacedataset:
                 datset.attrs['REPEATABILITY'] = float(i.lens.Repeatability)
                 datset.attrs['X_LASER_SPOT_SIZE'] = float(
                     i.lens.X_laser_Spot_Size)
-                if corners_mat.all() !=  None:
+                if (corners_mat > 0).all():
                     yi = np.min([corners_mat[0][0][1],
                                  corners_mat[0][1][1]])
                     yf = np.max([corners_mat[1][0][1],
@@ -1175,7 +1175,7 @@ class surfacedataset:
                         data= snr_data,
                         compression=compression)
                     SNR.attrs['Average SNR'] = int(i.log['SNR'])
-                    if corners_mat.all() != None:
+                    if (corners_mat > 0).all():
                         yi = np.min([corners_mat[0][0][1],
                                      corners_mat[0][1][1]])
                         yf = np.max([corners_mat[1][0][1],
@@ -1202,7 +1202,7 @@ class surfacedataset:
                             'Number of missing value']
                         MIS.attrs['MISSING_VALUE_CORRECTION'] = i.log[
                             'Missing Value correction']
-                        if corners_mat.all() != None:
+                        if (corners_mat > 0).all():
                             MIS.attrs['ROI'] = MIS.regionref[yi:yf,xi:xf]
                     if hasattr(i.array, 'mask'):
                         if i.array.mask.size != 1:
@@ -1215,7 +1215,7 @@ class surfacedataset:
                                 (i.name),
                                 data=mask_data,
                                 compression=compression)
-                            if corners_mat.all() != None:
+                            if (corners_mat > 0).all():
                                 MASKH.attrs['ROI'] = MASKH.regionref[yi:yf,xi:xf]
                     if kind == 'fullsample' and i.sample_infos is not None:
                         PHOTO = group.create_dataset(
